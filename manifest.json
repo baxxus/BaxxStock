@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "BaxxStock",
+  "version": "1.8.0",
+  "description": "Indizes, Devisen, Rohstoffe und eigene Aktien als schnelle Übersicht im Popup.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "BaxxStock",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  },
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "permissions": ["storage"],
+  "host_permissions": ["https://query1.finance.yahoo.com/*", "https://query2.finance.yahoo.com/*"]
+}
