@@ -83,7 +83,7 @@ function fmtDateTime(ts) {
 }
 
 function rowHtml(name, q) {
-  if (!q) return `<tr><td class="name"><span class="dot"></span>${name}</td><td></td><td class="price err">n/v</td><td class="chg err">–</td></tr>`;
+  if (!q) return `<tr><td class="name"><span class="dot"></span>${name}</td><td class="spark"></td><td class="price err">n/v</td><td class="chg err">–</td></tr>`;
   const up = q.change >= 0, cls = up ? "up" : "down", sign = up ? "+" : "";
   const dec = q.price < 10 ? 4 : 2;
   const [st, stLabel] = marketStatus(q);
@@ -106,11 +106,13 @@ async function render(force = false) {
   const symbols = groups.flatMap((g) => g.items.map((i) => i[0]));
   if (!symbols.length) { $("content").innerHTML = `<div class="empty">Keine Werte ausgewählt.</div>`; return; }
   $("updated").textContent = "lädt …";
+  $("refresh").classList.add("spinning");
   const data = await fetchAll(symbols);
+  $("refresh").classList.remove("spinning");
   $("content").innerHTML = groups.map((g) =>
-    `<h2>${g.group}</h2><table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym])).join("")}</table>`
+    `<span class="caption">${g.group}</span><table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym])).join("")}</table>`
   ).join("");
-  $("updated").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  $("updated").textContent = "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
 
 async function renderEditor() {
@@ -131,6 +133,8 @@ function showView(v) {
   $("toggleEdit").classList.toggle("active", v === "editor");
   $("toggleInfo").classList.toggle("active", v === "info");
 }
+$("version").textContent = "v" + chrome.runtime.getManifest().version;
+document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => showView("content")));
 $("refresh").addEventListener("click", () => { showView("content"); render(true); });
 $("toggleEdit").addEventListener("click", () => { showView(view === "editor" ? "content" : "editor"); if (view === "editor") renderEditor(); });
 $("toggleInfo").addEventListener("click", () => showView(view === "info" ? "content" : "info"));
