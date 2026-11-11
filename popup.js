@@ -124,20 +124,27 @@ async function render(force = false) {
   if (force) await chrome.storage.local.remove("cache");
   const s = await getSettings();
   const positions = await getPositions();
+  // Eigene Werte und Standard-Werte getrennt in zwei Tabs (Tabs nur, wenn eigene Werte vorhanden)
+  const { tab: saved } = await chrome.storage.local.get({ tab: "watch" });
+  const tab = s.watch.length && saved !== "markets" ? "watch" : "markets";
+  const tabsHtml = s.watch.length
+    ? `<div class="tabs" role="tablist">${[["watch", "Meine Werte"], ["markets", "Märkte"]].map(([id, label]) =>
+        `<button type="button" role="tab" data-tab="${id}" aria-selected="${tab === id}" class="${tab === id ? "active" : ""}">${label}</button>`).join("")}</div>`
+    : "";
   const groups = [];
-  if (s.watch.length) groups.push({ group: "Meine Werte", items: s.watch });
-  for (const g of MARKETS) {
+  if (tab === "watch") groups.push({ group: "", items: s.watch });
+  else for (const g of MARKETS) {
     const items = g.items.filter(([sym]) => !s.hidden.includes(sym));
     if (items.length) groups.push({ group: g.group, items });
   }
   const symbols = groups.flatMap((g) => g.items.map((i) => i[0]));
-  if (!symbols.length) { $("content").innerHTML = `<div class="empty">Keine Werte ausgewählt.</div>`; return; }
+  if (!symbols.length) { $("content").innerHTML = tabsHtml + `<div class="empty">Keine Werte ausgewählt.</div>`; $("updated").textContent = ""; return; }
   $("updated").textContent = "lädt …";
   $("refresh").classList.add("spinning");
   const data = await fetchAll(symbols);
   $("refresh").classList.remove("spinning");
-  $("content").innerHTML = groups.map((g) =>
-    `<span class="caption">${g.group}</span><table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym], positions[sym])).join("")}</table>`
+  $("content").innerHTML = tabsHtml + groups.map((g) =>
+    `${g.group ? `<span class="caption">${g.group}</span>` : ""}<table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym], positions[sym])).join("")}</table>`
   ).join("");
   $("updated").textContent = "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
@@ -163,6 +170,12 @@ function showView(v) {
 }
 $("version").textContent = "v" + chrome.runtime.getManifest().version;
 document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => showView("content")));
+$("content").addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-tab]")?.dataset.tab;
+  if (!t) return;
+  await chrome.storage.local.set({ tab: t });
+  render();
+});
 $("refresh").addEventListener("click", () => { showView("content"); render(true); });
 $("toggleEdit").addEventListener("click", () => { showView(view === "editor" ? "content" : "editor"); if (view === "editor") renderEditor(); });
 $("toggleInfo").addEventListener("click", () => showView(view === "info" ? "content" : "info"));
