@@ -8,7 +8,7 @@ Chrome-Erweiterung für den schnellen Blick auf die Märkte: Ein Klick auf das I
 - EUR/USD, Gold, Silber, Brent, Bitcoin
 - Eigene Watchlist mit beliebigen Yahoo-Symbolen (z. B. `SAP.DE`, `AAPL`, `IWDA.AS`)
 - Listen-Import per Textarea: Depotansicht der Bank einfügen oder Tabelle (Name, ISIN, Stück/Nominal, Wert; Tab oder Semikolon). Symbole werden über die ISIN gesucht, Stück und Wert bleiben lokal gespeichert
-- Eigene Werte und Standard-Werte getrennt in zwei Tabs
+- Eigene Werte und Standard-Werte getrennt in zwei Tabs; eigene Werte gruppiert nach Einzelaktien, ETFs und Sonstige (Typ laut Yahoo)
 - Standard-Werte einzeln ein- und ausblendbar
 - Kurs, Tagesveränderung in % und Mini-Kursverlauf des Tages
 - Statuspunkt pro Wert: handelt, vor-/nachbörslich oder geschlossen; Hover zeigt Datum und Uhrzeit des Kurses

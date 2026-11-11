@@ -57,7 +57,7 @@ async function fetchQuote(symbol) {
   const prev = m.chartPreviousClose ?? m.previousClose;
   const closes = (r.indicators?.quote?.[0]?.close || []).filter((v) => v != null);
   return { price, prev, change: price - prev, pct: prev ? ((price - prev) / prev) * 100 : 0,
-           currency: m.currency, closes, time: m.regularMarketTime, period: m.currentTradingPeriod };
+           currency: m.currency, type: m.instrumentType || "", closes, time: m.regularMarketTime, period: m.currentTradingPeriod };
 }
 
 async function fetchAll(symbols) {
@@ -65,7 +65,7 @@ async function fetchAll(symbols) {
   const now = Date.now();
   const out = {};
   await pool(symbols, 6, async (s) => { // begrenzt parallel, sonst drosselt Yahoo bei langen Listen
-    if (cache[s] && cache[s].q?.period && now - cache[s].t < CACHE_MS) { out[s] = cache[s].q; return; }
+    if (cache[s] && cache[s].q?.period && cache[s].q.type !== undefined && now - cache[s].t < CACHE_MS) { out[s] = cache[s].q; return; }
     try { const q = await fetchQuote(s); out[s] = q; cache[s] = { t: now, q }; }
     catch { out[s] = cache[s]?.q || null; }
   });
@@ -120,6 +120,15 @@ function rowHtml(name, q, pos) {
     <td class="chg ${cls}">${sign}${fmt(q.pct)} %</td></tr>`;
 }
 
+// Eigene Werte nach Yahoo-instrumentType gruppieren (Anleihen kennt Yahoo nicht)
+function splitByType(watch, data) {
+  const kinds = [["Einzelaktien", ["EQUITY"]], ["ETFs", ["ETF", "MUTUALFUND"]]];
+  const groups = kinds.map(([group, types]) => ({ group, items: watch.filter(([sym]) => types.includes(data[sym]?.type)) }));
+  const known = kinds.flatMap(([, types]) => types);
+  groups.push({ group: "Sonstige", items: watch.filter(([sym]) => !known.includes(data[sym]?.type)) });
+  return groups.filter((g) => g.items.length);
+}
+
 async function render(force = false) {
   if (force) await chrome.storage.local.remove("cache");
   const s = await getSettings();
@@ -131,7 +140,7 @@ async function render(force = false) {
     ? `<div class="tabs" role="tablist">${[["watch", "Meine Werte"], ["markets", "Märkte"]].map(([id, label]) =>
         `<button type="button" role="tab" data-tab="${id}" aria-selected="${tab === id}" class="${tab === id ? "active" : ""}">${label}</button>`).join("")}</div>`
     : "";
-  const groups = [];
+  let groups = [];
   if (tab === "watch") groups.push({ group: "", items: s.watch });
   else for (const g of MARKETS) {
     const items = g.items.filter(([sym]) => !s.hidden.includes(sym));
@@ -143,6 +152,7 @@ async function render(force = false) {
   $("refresh").classList.add("spinning");
   const data = await fetchAll(symbols);
   $("refresh").classList.remove("spinning");
+  if (tab === "watch") groups = splitByType(s.watch, data);
   $("content").innerHTML = tabsHtml + groups.map((g) =>
     `${g.group ? `<span class="caption">${g.group}</span>` : ""}<table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym], positions[sym])).join("")}</table>`
   ).join("");

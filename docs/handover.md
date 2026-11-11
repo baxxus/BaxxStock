@@ -2,9 +2,10 @@
 Stand: 2026-11-11
 
 ## Aktueller Stand
-Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.9.0. Neu: Listen-Import per Textarea in den Einstellungen (`import.js` parst, `popup.js` löst ISINs über die Yahoo-Suche zu Symbolen auf). Popup zeigt eigene Werte und Standard-Werte getrennt in zwei Tabs. Branch `main`, Tabs noch nicht committet.
+Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.9.0. Neu: Listen-Import per Textarea in den Einstellungen (`import.js` parst, `popup.js` löst ISINs über die Yahoo-Suche zu Symbolen auf). Popup zeigt eigene Werte und Standard-Werte getrennt in zwei Tabs. Eigene Werte sind nach Einzelaktien/ETFs/Sonstige gruppiert (Typ aus Yahoo `instrumentType`). Branch `main`, Gruppierung noch nicht committet.
 
 ## Zuletzt erledigt
+- Gruppierung der eigenen Werte nach Einzelaktien, ETFs (inkl. Fonds) und Sonstige; Anleihen bewusst nicht, da Yahoo dafür keine Kurse liefert
 - Zwei Tabs „Meine Werte“ / „Märkte“ (nur bei vorhandenen eigenen Werten), gewählter Tab wird gemerkt, geladen wird nur der aktive Tab
 - Listen-Import: Depot-Freitext (Name → ISIN → Stück → Wert) und Tabellen mit Tab/Semikolon
 - Stück/Wert lokal in `chrome.storage.local` (`positions`), Anzeige in Einstellungen und als Tooltip am Namen
