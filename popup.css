@@ -5,8 +5,8 @@
 *{box-sizing:border-box}
 body{width:380px;margin:0;background:linear-gradient(155deg,#20272c 0%,var(--bg) 55%)}
 [hidden]{display:none!important}
-button,input{font:inherit}button{cursor:pointer}
-button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button,input,textarea{font:inherit}button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* Kopfzeile */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 12px;border-bottom:1px solid var(--line)}
@@ -50,6 +50,9 @@ td.chg{text-align:right;font-variant-numeric:tabular-nums;width:76px;font-weight
 code{font:10px Consolas,monospace;color:var(--text)}
 #addForm{display:flex;gap:6px}
 #addForm input{flex:1;min-width:0;border:1px solid #45515a;border-radius:5px;color:var(--text);background:var(--surface);padding:8px}
+#importText{display:block;width:100%;resize:vertical;border:1px solid #45515a;border-radius:5px;color:var(--text);background:var(--surface);padding:8px;font:10px Consolas,monospace}
+.import-row{display:flex;align-items:center;gap:10px;margin-top:8px}.import-row .hint{margin:0;flex:1;min-width:0;overflow-wrap:anywhere}
+.primary-button:disabled{opacity:.5;cursor:default}
 .primary-button{border:1px solid var(--accent);border-radius:6px;background:#183e38;color:var(--accent);padding:7px 12px;font-size:11px;font-weight:600}.primary-button:hover{background:#1f4d46}
 #watchList{list-style:none;margin:8px 0 0;padding:0}
 #watchList li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}

@@ -20,6 +20,30 @@ async function getSettings() {
   return s;
 }
 async function saveSettings(patch) { await chrome.storage.sync.set(patch); }
+// Positionen (Stück/Wert) bleiben lokal, nicht im Chrome Sync: { SYMBOL: { isin, qty, value } }
+async function getPositions() { return (await chrome.storage.local.get({ positions: {} })).positions; }
+
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function posText(p) {
+  const parts = [];
+  if (p.qty != null) parts.push(`${p.qty.toLocaleString("de-DE", { maximumFractionDigits: 4 })} Stk.`);
+  if (p.value != null) parts.push(`Wert ${fmt(p.value)}`);
+  return parts.join(" · ");
+}
+
+async function pool(items, limit, fn) {
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) { const i = next++; await fn(items[i], i); }
+  }));
+}
+
+async function resolveIsin(isin) {
+  const res = await fetch(`https://query1.finance.yahoo.com/v1/finance/search?q=${isin}&quotesCount=5&newsCount=0&listsCount=0`);
+  if (!res.ok) throw new Error(res.status);
+  const q = (await res.json()).quotes?.find((x) => x.symbol);
+  return q ? { symbol: q.symbol, name: q.longname || q.shortname || q.symbol } : null;
+}
 
 async function fetchQuote(symbol) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=15m`;
@@ -40,11 +64,11 @@ async function fetchAll(symbols) {
   const { cache = {} } = await chrome.storage.local.get("cache");
   const now = Date.now();
   const out = {};
-  await Promise.all(symbols.map(async (s) => {
+  await pool(symbols, 6, async (s) => { // begrenzt parallel, sonst drosselt Yahoo bei langen Listen
     if (cache[s] && cache[s].q?.period && now - cache[s].t < CACHE_MS) { out[s] = cache[s].q; return; }
     try { const q = await fetchQuote(s); out[s] = q; cache[s] = { t: now, q }; }
     catch { out[s] = cache[s]?.q || null; }
-  }));
+  });
   await chrome.storage.local.set({ cache });
   return out;
 }
@@ -82,13 +106,15 @@ function fmtDateTime(ts) {
     ", " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr";
 }
 
-function rowHtml(name, q) {
-  if (!q) return `<tr><td class="name"><span class="dot"></span>${name}</td><td class="spark"></td><td class="price err">n/v</td><td class="chg err">–</td></tr>`;
+function rowHtml(name, q, pos) {
+  name = esc(name);
+  const posInfo = pos ? ` · ${posText(pos)}` : "";
+  if (!q) return `<tr><td class="name" title="${pos ? posText(pos) : ""}"><span class="dot"></span>${name}</td><td class="spark"></td><td class="price err">n/v</td><td class="chg err">–</td></tr>`;
   const up = q.change >= 0, cls = up ? "up" : "down", sign = up ? "+" : "";
   const dec = q.price < 10 ? 4 : 2;
   const [st, stLabel] = marketStatus(q);
   return `<tr title="${fmt(q.change, dec)} ${q.currency || ""}">
-    <td class="name" title="${stLabel} · Kurs vom ${fmtDateTime(q.time)}"><span class="dot ${st}"></span>${name}</td>
+    <td class="name" title="${stLabel} · Kurs vom ${fmtDateTime(q.time)}${posInfo}"><span class="dot ${st}"></span>${name}</td>
     <td class="spark">${sparkline(q.closes, up)}</td>
     <td class="price">${fmt(q.price, dec)}</td>
     <td class="chg ${cls}">${sign}${fmt(q.pct)} %</td></tr>`;
@@ -97,6 +123,7 @@ function rowHtml(name, q) {
 async function render(force = false) {
   if (force) await chrome.storage.local.remove("cache");
   const s = await getSettings();
+  const positions = await getPositions();
   const groups = [];
   if (s.watch.length) groups.push({ group: "Meine Werte", items: s.watch });
   for (const g of MARKETS) {
@@ -110,18 +137,19 @@ async function render(force = false) {
   const data = await fetchAll(symbols);
   $("refresh").classList.remove("spinning");
   $("content").innerHTML = groups.map((g) =>
-    `<span class="caption">${g.group}</span><table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym])).join("")}</table>`
+    `<span class="caption">${g.group}</span><table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym], positions[sym])).join("")}</table>`
   ).join("");
   $("updated").textContent = "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
 
 async function renderEditor() {
   const s = await getSettings();
+  const positions = await getPositions();
   $("marketList").innerHTML = MARKETS.map((g) => `<div class="mgroup"><div class="mhead">${g.group}</div>` +
     g.items.map(([sym, name]) => `<label class="mitem"><input type="checkbox" data-sym="${sym}" ${s.hidden.includes(sym) ? "" : "checked"}> ${name}</label>`).join("") +
     `</div>`).join("");
   $("watchList").innerHTML = s.watch.map(([sym, name], i) =>
-    `<li><span>${name} <small>(${sym})</small></span><button data-i="${i}" title="Entfernen">✕</button></li>`).join("");
+    `<li><span>${esc(name)} <small>(${esc(sym)})</small>${positions[sym] ? `<br><small>${posText(positions[sym])}</small>` : ""}</span><button data-i="${i}" title="Entfernen">✕</button></li>`).join("");
 }
 
 let view = "content";
@@ -156,8 +184,45 @@ $("watchList").addEventListener("click", async (e) => {
   const i = e.target.dataset.i;
   if (i === undefined) return;
   const s = await getSettings();
-  s.watch.splice(Number(i), 1);
+  const [[sym]] = s.watch.splice(Number(i), 1);
   await saveSettings({ watch: s.watch });
+  if (!s.watch.some(([x]) => x === sym)) {
+    const positions = await getPositions();
+    delete positions[sym];
+    await chrome.storage.local.set({ positions });
+  }
+  renderEditor(); render();
+});
+$("importBtn").addEventListener("click", async () => {
+  const status = $("importStatus"), btn = $("importBtn");
+  const items = parseDepotList($("importText").value);
+  if (!items.length) { status.textContent = "Keine Positionen erkannt. Pro Position wird eine gültige ISIN benötigt."; return; }
+  btn.disabled = true;
+  const results = new Array(items.length);
+  let done = 0;
+  await pool(items, 4, async (it, i) => {
+    try { results[i] = await resolveIsin(it.isin); } catch { results[i] = null; }
+    status.textContent = `Suche Symbole … ${++done}/${items.length}`;
+  });
+  const failed = items.filter((_, i) => !results[i]);
+  try {
+    const s = await getSettings(), positions = await getPositions();
+    let added = 0;
+    items.forEach((it, i) => {
+      const r = results[i];
+      if (!r) return;
+      if (!s.watch.some(([sym]) => sym === r.symbol)) { s.watch.push([r.symbol, it.name || r.name]); added++; }
+      positions[r.symbol] = { isin: it.isin, qty: it.qty, value: it.value };
+    });
+    await saveSettings({ watch: s.watch });
+    await chrome.storage.local.set({ positions });
+    status.textContent = `${items.length - failed.length} übernommen (${added} neu)` +
+      (failed.length ? `, nicht gefunden: ${failed.map((f) => `${f.name || "?"} (${f.isin})`).join(", ")}` : "");
+    if (!failed.length) $("importText").value = "";
+  } catch (err) {
+    status.textContent = "Speichern fehlgeschlagen (Chrome-Sync-Speicher voll?): " + err.message;
+  }
+  btn.disabled = false;
   renderEditor(); render();
 });
 $("marketList").addEventListener("change", async (e) => {

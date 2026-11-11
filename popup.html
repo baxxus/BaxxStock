@@ -33,6 +33,12 @@
         </form>
         <ul id="watchList"></ul>
       </div>
+      <span class="caption">Liste importieren</span>
+      <div class="card">
+        <p class="hint">Depotansicht der Bank direkt einfügen (Name, Stück, Wert werden übernommen) oder Tabelle mit den Spalten <code>Name</code>, <code>ISIN</code>, <code>Stück/Nominal</code>, <code>Wert</code> – getrennt durch Tab oder Semikolon. Die Symbole werden über die ISIN bei Yahoo gesucht (nur die ISINs werden gesendet). Stück und Wert bleiben lokal im Browser.</p>
+        <textarea id="importText" rows="6" spellcheck="false" placeholder="SAP SE;DE0007164600;10;1.234,56"></textarea>
+        <div class="import-row"><button id="importBtn" class="primary-button" type="button">Importieren</button><span id="importStatus" class="hint"></span></div>
+      </div>
       <span class="caption">Standard-Werte</span>
       <div id="marketList" class="card"></div>
     </section>
@@ -51,6 +57,8 @@
           <dd>Kurse werden beim Öffnen geladen und 1 Minute zwischengespeichert. Der Pfeil oben lädt sofort neu.</dd>
           <dt>Eigene Werte</dt>
           <dd>Über das Zahnrad hinzufügen. Yahoo-Symbole: Xetra mit <code>.DE</code> (z. B. <code>SAP.DE</code>), US-Aktien ohne Endung (<code>AAPL</code>), Amsterdam <code>.AS</code>, Futures <code>=F</code>, Devisen <code>=X</code>. Symbole findest du auf finance.yahoo.com.</dd>
+          <dt>Liste importieren</dt>
+          <dd>In den Einstellungen lassen sich ganze Depots einfügen. Erkannt werden Positionen anhand der ISIN; Stück und Wert siehst du in den Einstellungen und beim Hover über den Namen. Bei Freitext gilt je Position die Reihenfolge Name, ISIN, Stück, Wert.</dd>
           <dt>Datenquelle</dt>
           <dd>Yahoo Finance (inoffizielle Schnittstelle). Kurse können je nach Börse rund 15 Minuten verzögert sein. Keine Anlageberatung.</dd>
         </dl>
@@ -59,6 +67,7 @@
   </main>
 
   <footer><span><span class="local-dot" aria-hidden="true"></span>Yahoo Finance · teils verzögert</span><span id="version" class="version"></span></footer>
+  <script src="import.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

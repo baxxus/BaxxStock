@@ -7,6 +7,7 @@ Chrome-Erweiterung für den schnellen Blick auf die Märkte: Ein Klick auf das I
 - DAX, MDAX, TecDAX, SDAX, Euro Stoxx 50, Dow Jones, S&P 500, Nasdaq 100, Nikkei, Hang Seng
 - EUR/USD, Gold, Silber, Brent, Bitcoin
 - Eigene Watchlist mit beliebigen Yahoo-Symbolen (z. B. `SAP.DE`, `AAPL`, `IWDA.AS`)
+- Listen-Import per Textarea: Depotansicht der Bank einfügen oder Tabelle (Name, ISIN, Stück/Nominal, Wert; Tab oder Semikolon). Symbole werden über die ISIN gesucht, Stück und Wert bleiben lokal gespeichert
 - Standard-Werte einzeln ein- und ausblendbar
 - Kurs, Tagesveränderung in % und Mini-Kursverlauf des Tages
 - Statuspunkt pro Wert: handelt, vor-/nachbörslich oder geschlossen; Hover zeigt Datum und Uhrzeit des Kurses
