@@ -42,19 +42,55 @@ td.name{cursor:default;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 td.spark{width:72px;padding:0 6px}
 td.price{width:86px;text-align:right;font-variant-numeric:tabular-nums}
 td.chg{text-align:right;font-variant-numeric:tabular-nums;width:76px;font-weight:600}
-.summary{margin-bottom:12px;padding:10px 12px 8px;border:1px solid var(--line);border-radius:8px;background:#ffffff03}
-.summary .caption{margin:0 0 4px}
-.sum-main{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:6px}
-.sum-arrow{font-size:12px;margin-right:6px}.sum-pct{font-size:12px;font-weight:600;margin-left:6px}
-.sum-row{display:flex;justify-content:space-between;color:var(--muted);font-size:10.5px;line-height:1.7;font-variant-numeric:tabular-nums}
-.sum-details{margin-top:6px;border-top:1px solid var(--line);padding-top:6px}.sum-details summary{cursor:pointer;color:var(--accent);font-size:10px;margin-bottom:4px}
-.sum-details b{font-weight:600;margin-left:6px}
-.sortbar{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:0 0 -6px;font:9px Consolas,monospace;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
-.sortbar span{margin-right:2px}
-.sortbar button{padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--muted);font:600 10px 'Segoe UI',system-ui,sans-serif;letter-spacing:0;text-transform:none}
-.sortbar button:hover{color:var(--text)}
-.sortbar button.active{color:var(--accent);background:#183e38;border-color:var(--accent)}
-.sum-note{margin-top:4px;color:var(--muted);font-size:9.5px}
+/* Meine Werte: Depot-Übersicht */
+.hero{margin-bottom:10px;padding:12px 12px 10px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(135deg,#ffffff0a,#ffffff02 70%)}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.hero .caption{margin:0 0 4px}
+.hero-value{font-size:23px;font-weight:700;letter-spacing:-.5px;line-height:1.05;font-variant-numeric:tabular-nums}
+.hero-value small{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0}
+.pill{flex:none;padding:4px 9px;border-radius:999px;background:#ffffff0d;color:var(--muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill span{font-size:8px;vertical-align:1px}
+.pill.up{background:#5fe3a11f}.pill.down{background:#ff70781f}
+.hero-sub{margin-top:6px;color:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+.hero-sub b{font-weight:600}
+.alloc{display:flex;gap:2px;height:4px;margin-top:11px}
+.alloc i{display:block;min-width:3px;border-radius:2px;background:var(--g);transform-origin:left}
+.alloc.anim i{animation:grow .45s cubic-bezier(.2,.7,.2,1) both}@keyframes grow{from{transform:scaleX(0)}}
+.alloc-legend{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:6px;font:9px Consolas,monospace;letter-spacing:.4px;color:var(--muted);text-transform:uppercase}
+.alloc-legend i,.gname::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;background:var(--g);transform:skewY(-20deg)}
+.hero-note{margin-top:6px;color:var(--muted);font-size:9.5px}
+[data-g=stocks]{--g:var(--accent)}[data-g=etfs]{--g:var(--feed)}[data-g=other]{--g:#8794a0}
+
+/* Meine Werte: Sortierung, Gruppen, Positionen */
+.sortbar{display:flex;align-items:center;justify-content:space-between;font:9px Consolas,monospace;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{padding:4px 10px;border:0;border-left:1px solid var(--line);background:none;color:var(--muted);font:600 10.5px 'Segoe UI',system-ui,sans-serif;letter-spacing:0;text-transform:none}
+.seg button:first-child{border-left:0}
+.seg button:hover{color:var(--text)}
+.seg button.active{color:var(--accent);background:#183e38}
+.seg button:focus-visible,.ghead:focus-visible{outline-offset:-2px}
+.group{margin-top:8px;border:1px solid var(--line);border-radius:8px;background:#ffffff03;overflow:hidden}
+.ghead{display:flex;align-items:center;gap:7px;width:100%;padding:8px 10px;border:0;background:#ffffff06;color:var(--text);text-align:left}
+.ghead:hover{background:#ffffff0c}
+.chev{flex:none;width:5px;height:5px;margin:0 3px 2px 1px;border:solid var(--muted);border-width:0 1.5px 1.5px 0;transform:rotate(45deg);transition:transform .15s}
+.ghead[aria-expanded=false] .chev{transform:rotate(-45deg);margin-bottom:0}
+.gname{font:9px Consolas,monospace;letter-spacing:1px;text-transform:uppercase}
+.gcount{font:9px Consolas,monospace;color:var(--muted)}
+.gsum{margin-left:auto;color:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gsum b{display:inline-block;min-width:50px;text-align:right;font-weight:600}
+.rows{border-top:1px solid var(--line)}
+.pos{padding:7px 10px 8px;cursor:default}
+.pos+.pos{border-top:1px solid var(--line)}
+.pos:hover{background:#ffffff08}
+.p-l1,.p-l2{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.p-l2{margin-top:3px;color:var(--muted);font-size:10.5px}
+.p-name,.p-meta{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.p-name{font-weight:600}
+.p-val{font-weight:600;font-variant-numeric:tabular-nums}
+.p-l2 svg{flex:none;opacity:.85}
+.p-chg{font-weight:600;font-variant-numeric:tabular-nums}
+.p-chg span{display:inline-block;min-width:62px;text-align:right}
+.p-chg .p-pct{min-width:50px}
 .up{color:var(--up)}.down{color:var(--down)}.err{color:var(--muted)}
 .dot{display:inline-block;width:5px;height:5px;margin:0 8px 2px 0;vertical-align:middle;transform:skewY(-20deg);background:transparent;box-shadow:inset 0 0 0 1px #5b6a74}
 .dot.open{background:var(--up);box-shadow:none}
@@ -89,4 +125,4 @@ code{font:10px Consolas,monospace;color:var(--text)}
 footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--line);color:var(--muted);font-size:9px}
 .local-dot{display:inline-block;height:4px;width:4px;border-radius:50%;background:var(--accent);margin-right:5px;vertical-align:middle}
 .version{font:8px Consolas,monospace;letter-spacing:.3px;text-transform:uppercase}
-@media(prefers-reduced-motion:reduce){.icon-button.spinning svg{animation:none}}
+@media(prefers-reduced-motion:reduce){.icon-button.spinning svg,.alloc.anim i{animation:none}.chev{transition:none}}

@@ -2,18 +2,20 @@
 Stand: 2026-11-13
 
 ## Aktueller Stand
-Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.11.0. Tagesentwicklung der eigenen Positionen als Karte im Tab „Meine Werte“ (mit „Details je Position“) und als natives Chrome-Badge am Icon (grün ▲ / rot ▼), Aktualisierung per Service Worker alle 15 min. Neu: Sortierung der eigenen Werte nach Name oder Positionswert, auf-/absteigend. Branch `main`, 1.11.0 nicht committet.
+Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.12.0. Tab „Meine Werte“ neu gestaltet: Depot-Übersicht (Wert, Tagesveränderung, Aufteilung), zweizeilige Positionszeilen, einklappbare Gruppen mit Summen, Sortierung Name/Wert/Heute. Icon-Badge (▲/▼) per Service Worker alle 15 min. Branch `main`, 1.12.0 nicht committet.
 
 ## Zuletzt erledigt
-- Sortierleiste „Name“/„Wert“ über der Liste: erster Klick Name ↑ bzw. Wert ↓, erneuter Klick dreht die Richtung; sortiert innerhalb der Gruppen Einzelaktien/ETFs/Sonstige
-- Gespeichert in `chrome.storage.local` (`sort`, z. B. `value-desc`); Wert = Positionswert in € aus `computeSummary`, Werte ohne Position immer am Ende
-- Geprüft im Browser mit gemocktem Chrome/Yahoo: alle vier Richtungen, Speicherung, Tooltip-Texte
+- Summary-Karte samt „Details je Position“ durch Depot-Übersicht ersetzt; Positionswert und Tagesveränderung (€, %) stehen jetzt direkt in jeder Zeile (`posRowHtml`)
+- Gruppen (`GROUPS` in `popup.js`) einklappbar, Zustand in `chrome.storage.local` (`collapsed`); Gruppenzeile zeigt Summe und Tages-%
+- Sortierung um „Heute“ (Δ €, ohne Positionen Δ %) erweitert; Sortieren/Einklappen zeichnet aus dem gemerkten Stand (`last`) neu, ohne Kurse neu zu laden
+- Märkte-Tab unverändert (Tabellen, `rowHtml`)
+- Geprüft im Browser mit gemocktem Chrome/Yahoo (17 Werte: EUR/USD/GBp, ⚠-Anleihe, ohne Bestand, ohne Kurs): Darstellung bei 380 px, alle Sortierungen, Einklappen, Ansicht ohne Positionen
 
 ## Offen
-- [ ] In echtem Chrome prüfen: Badge-Darstellung, Alarm im Hintergrund, Sortierung mit echtem Depot
+- [ ] In echtem Chrome mit echtem Depot prüfen: neue Ansicht, Badge, Alarm im Hintergrund
 - [ ] Optional: Anleihen sauber rechnen (Nominal × Kurs / 100), statt auf den Importwert auszuweichen
 - [ ] Import mit weiteren Depotansichten testen und Parser nachschärfen
-- [ ] Screenshots in `docs/screenshots/` zeigen Summary-Karte und Sortierleiste noch nicht
+- [ ] Screenshots in `docs/screenshots/` zeigen noch die alte Ansicht
 
 ## Nächster Schritt
-Erweiterung in Chrome neu laden und Sortierung sowie Badge mit dem echten Depot prüfen.
+Erweiterung in Chrome neu laden und den Tab „Meine Werte“ mit dem echten Depot durchsehen.
