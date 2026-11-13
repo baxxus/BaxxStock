@@ -91,7 +91,10 @@ function summaryHtml(s) {
   return `<div class="summary"><span class="caption">Heute vs. gestern</span>
     <div class="sum-main ${cls}"><span class="sum-arrow" aria-hidden="true">${arrow}</span>${sign}${fmt(s.delta)} € <span class="sum-pct">${sign}${fmt(s.pct)} %</span></div>
     <div class="sum-row"><span>Gesamtwert jetzt</span><span>${fmt(s.now)} €</span></div>
-    <div class="sum-row"><span>Vortagesschluss</span><span>${fmt(s.prev)} €</span></div>${partial}</div>`;
+    <div class="sum-row"><span>Vortagesschluss</span><span>${fmt(s.prev)} €</span></div>${partial}
+    <details class="sum-details"><summary>Details je Position</summary>${s.rows.slice(0, 15).map((r) =>
+      `<div class="sum-row" title="${r.flag ? "Stück × Kurs weicht stark vom importierten Wert ab – importierter Wert wird verwendet" : ""}"><span>${esc(r.name)}${r.flag ? " ⚠" : ""}</span><span>${fmt(r.now)} € <b class="${r.delta >= 0 ? "up" : "down"}">${r.delta >= 0 ? "+" : ""}${fmt(r.delta)}</b></span></div>`).join("")}
+      ${s.rows.length > 15 ? `<div class="sum-note">… und ${s.rows.length - 15} weitere</div>` : ""}</details></div>`;
 }
 
 // Eigene Werte nach Yahoo-instrumentType gruppieren (Anleihen kennt Yahoo nicht)

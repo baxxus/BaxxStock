@@ -55,32 +55,39 @@ function fxSymbols(watch, positions, quotes) {
 }
 
 // Gesamtentwicklung der eigenen Werte heute vs. Vortagesschluss, in EUR.
-// Mit Stückzahl: qty × Kurs (Fremdwährung per fx). Nur mit Wert: Wert gilt als aktuell, Vortag über die Tagesveränderung.
+// Mit Stückzahl: qty × Kurs (Fremdwährung per fx). Weicht das um mehr als Faktor 2 vom importierten Wert ab
+// (falsche Börse/Einheit, Nominal statt Stück …), gilt stattdessen der importierte Wert (flag = true).
+// Nur mit Wert: Wert gilt als aktuell, Vortag über die Tagesveränderung.
 // Positionen ohne Daten werden ausgelassen (used < total). Ohne verwertbare Position: null.
 function computeSummary(watch, positions, quotes, fx = {}) {
-  let now = 0, prev = 0, used = 0, total = 0;
-  for (const [sym] of watch) {
+  let now = 0, prev = 0, total = 0;
+  const rows = [], seen = new Set();
+  for (const [sym, name] of watch) {
     const p = positions[sym];
-    if (!p || (p.qty == null && p.value == null)) continue;
+    if (seen.has(sym) || !p || (p.qty == null && p.value == null)) continue;
+    seen.add(sym);
     total++;
     const q = quotes[sym];
     if (!q || !Number.isFinite(q.price) || !Number.isFinite(q.prev) || q.prev === 0) continue;
+    let n = null, pv = null, flag = false;
     if (p.qty != null) {
       const [f, cur] = currencyOf(q);
       const rate = cur === "EUR" ? 1 : fx[`${cur}EUR=X`]?.price;
-      if (!Number.isFinite(rate)) continue;
-      now += p.qty * q.price * f * rate;
-      prev += p.qty * q.prev * f * rate;
-    } else {
-      now += p.value;
-      prev += p.value / (1 + q.pct / 100);
+      if (Number.isFinite(rate)) { n = p.qty * q.price * f * rate; pv = p.qty * q.prev * f * rate; }
+      if (p.value > 0 && !(n > p.value / 2 && n < p.value * 2)) { n = null; flag = true; }
     }
-    used++;
+    if (n === null) {
+      if (p.value == null) continue;
+      n = p.value; pv = p.value / (1 + q.pct / 100);
+    }
+    now += n; prev += pv;
+    rows.push({ sym, name: name || sym, now: n, delta: n - pv, flag });
   }
-  if (!used) return null;
+  if (!rows.length) return null;
+  rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
   const delta = now - prev;
   const dir = Math.abs(delta) < 0.005 ? 0 : delta > 0 ? 1 : -1;
-  return { now, prev, delta, pct: prev ? (delta / prev) * 100 : 0, used, total, dir };
+  return { now, prev, delta, pct: prev ? (delta / prev) * 100 : 0, used: rows.length, total, dir, rows };
 }
 
 async function loadSummary(watch, positions, quotes) {
@@ -103,11 +110,11 @@ async function updateIcon(summary) {
     const bmp = await createImageBitmap(blob);
     const c = new OffscreenCanvas(size, size), g = c.getContext("2d");
     g.drawImage(bmp, 0, 0, size, size);
-    const r = size * 0.3, cx = size - r, cy = size - r;
+    const r = size * 0.38, cx = size - r, cy = size - r;
     g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
     g.fillStyle = up ? "#5fe3a1" : "#ff7078"; g.fill();
     g.lineWidth = Math.max(1, size / 16); g.strokeStyle = "#14191d"; g.stroke();
-    const k = r * 0.62, s = up ? 1 : -1; // Pfeil, nach unten gespiegelt
+    const k = r * 0.66, s = up ? 1 : -1; // Pfeil, nach unten gespiegelt
     const pts = [[0, -1], [0.95, 0], [0.38, 0], [0.38, 0.95], [-0.38, 0.95], [-0.38, 0], [-0.95, 0]];
     g.beginPath();
     pts.forEach(([x, y], i) => g[i ? "lineTo" : "moveTo"](cx + x * k, cy + y * k * s));

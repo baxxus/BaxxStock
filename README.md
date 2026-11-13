@@ -6,7 +6,7 @@
 
 **Börsenkurse im Chrome-Popup – ein Klick, alles Wichtige auf einen Blick.**
 
-![Version](https://img.shields.io/badge/Version-1.10.0-4ce0cc)
+![Version](https://img.shields.io/badge/Version-1.10.1-4ce0cc)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-f59a57)
 ![Lizenz](https://img.shields.io/badge/Lizenz-Apache%202.0-9caab4)
 
