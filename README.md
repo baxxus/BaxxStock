@@ -37,7 +37,7 @@ Ohne Konto, ohne API-Key, ohne Tracking, ohne eigenen Server.
 - **Je Position:** Wert, Bestand, Kurs, Mini-Kurve und heutige Veränderung in € und %
 - **Gruppen** (Einzelaktien, ETFs, Sonstige) einklappbar, die Gruppensumme bleibt sichtbar
 - **Sortierung** nach Name, Wert, Veränderung in € oder in %, jeweils auf- und absteigend
-- **Einzelne Positionen** manuell anlegen: Symbol, optional Name, Stück und Wert; später per Stift-Symbol bearbeitbar
+- **Einzelne Positionen** manuell anlegen: Im Namensfeld suchen (z. B. „nvi“ → NVIDIA) und Treffer wählen, das Symbol wird automatisch eingetragen; optional Stück und Wert; später per Stift-Symbol bearbeitbar
 - **Depot-Import:** Ansicht der Bank in die Textarea einfügen – die Symbole werden über die ISIN gefunden
 - **Icon-Badge:** grün ▲ im Plus, rot ▼ im Minus; der Tooltip nennt die Veränderung in % (Update im Hintergrund alle 15 Minuten)
 
@@ -70,7 +70,7 @@ Die Erweiterung ist (noch) nicht im Chrome Web Store und wird als entpackte Erwe
 | Aktion | So geht's |
 |---|---|
 | Kurse neu laden | Pfeil-Symbol oben rechts (sonst 1 Minute Zwischenspeicher) |
-| Wert hinzufügen | Zahnrad → „Meine Werte“ → Symbol, optional Name, Stück und Wert (in €) eintragen |
+| Wert hinzufügen | Zahnrad → „Meine Werte“ → im Namensfeld suchen und Treffer wählen (Maus oder ↑/↓ + Enter), optional Stück und Wert (in €) eintragen; ein Symbol lässt sich auch direkt eintragen |
 | Wert bearbeiten / entfernen | Zahnrad → „Meine Werte“ → Stift (ändern) oder Papierkorb (entfernen, zweiter Klick bestätigt) |
 | Depot importieren | Zahnrad → „Import“ → Text einfügen → Importieren |
 | Eigene Werte sortieren | „Name“, „Wert“, „Heute €“ oder „Heute %“ über der Liste; erneuter Klick dreht die Richtung |
@@ -106,7 +106,7 @@ Bei geschlossener Börse ist es die Veränderung des letzten Handelstages. Es ha
 ## Datenschutz
 
 - Es gibt keinen eigenen Server – Popup und Hintergrund-Prozess sprechen direkt mit Yahoo Finance
-- Dorthin gehen nur Symbole (Kursabfrage) und beim Import die ISINs (Symbolsuche) – **nie Stückzahlen oder Werte**
+- Dorthin gehen nur Symbole (Kursabfrage), beim Import die ISINs und beim Hinzufügen der Suchbegriff aus dem Namensfeld (Symbolsuche) – **nie Stückzahlen oder Werte**
 - Stückzahlen und Werte deiner Positionen sowie Sortierung und Tabauswahl bleiben **lokal im Browser** und werden nicht über Chrome Sync geteilt
 - Die Watchlist selbst (Symbole und Namen) liegt in Chrome Sync
 

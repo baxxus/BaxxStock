@@ -235,6 +235,7 @@ const parsedField = (el) => { const t = el.value.trim(); if (!t) return { empty:
 function setMsg(text, kind = "") { const m = $("formMsg"); m.textContent = text; m.className = "form-msg" + (kind ? " " + kind : ""); }
 function resetForm() {
   editing = null;
+  acHide();
   $("addForm").reset();
   $("symbolInput").readOnly = false;
   $("formTitle").textContent = "Wert hinzufügen";
@@ -330,6 +331,85 @@ $("content").addEventListener("click", async (e) => {
 $("refresh").addEventListener("click", () => { showView("content"); render(true); });
 $("toggleEdit").addEventListener("click", () => { showView(view === "editor" ? "content" : "editor"); if (view === "editor") renderEditor(); });
 $("toggleInfo").addEventListener("click", () => showView(view === "info" ? "content" : "info"));
+// ── Autocomplete im Namensfeld: Symbolsuche bei Yahoo ──
+const acCache = new Map();
+let acTimer = null, acAbort = null, acItems = [], acActive = -1;
+async function searchSymbols(q, signal) {
+  if (acCache.has(q)) return acCache.get(q);
+  const res = await fetch(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0&listsCount=0&lang=de-DE&region=DE`, { signal });
+  if (!res.ok) throw new Error(res.status);
+  const items = ((await res.json()).quotes || []).filter((x) => x.symbol && x.quoteType !== "OPTION").map((x) => ({
+    symbol: x.symbol, name: String(x.longname || x.shortname || x.symbol).replace(/\s+/g, " ").trim(),
+    exch: x.exchDisp || "", type: x.typeDisp || x.quoteType || "", future: x.quoteType === "FUTURE" }));
+  items.sort((a, b) => a.future - b.future); // Futures ans Ende (stabil), sonst Reihenfolge von Yahoo
+  const top = items.slice(0, 7);
+  acCache.set(q, top);
+  return top;
+}
+function acHide() {
+  clearTimeout(acTimer); acAbort?.abort();
+  acItems = []; acActive = -1;
+  $("acList").hidden = true; $("acList").innerHTML = "";
+  $("nameInput").setAttribute("aria-expanded", "false"); $("nameInput").removeAttribute("aria-activedescendant");
+}
+function acPlace() { $("acList").style.top = $("nameInput").offsetTop + $("nameInput").offsetHeight + 4 + "px"; }
+function acInfo(text) { $("acList").innerHTML = `<li class="ac-info" role="presentation">${text}</li>`; $("acList").hidden = false; acPlace(); }
+function acSetActive(i) {
+  acActive = i;
+  $("acList").querySelectorAll("li[role=option]").forEach((li, n) => li.setAttribute("aria-selected", n === i));
+  const el = $("acList").children[i];
+  if (el) { el.scrollIntoView({ block: "nearest" }); $("nameInput").setAttribute("aria-activedescendant", el.id); }
+}
+function acPick(i) {
+  const it = acItems[i];
+  if (!it) return;
+  $("symbolInput").value = it.symbol; $("nameInput").value = it.name;
+  acHide(); setMsg("");
+  $("qtyInput").focus();
+}
+async function acSearch(q) {
+  acAbort?.abort();
+  const ctl = (acAbort = new AbortController());
+  acInfo("Suche …");
+  $("nameInput").setAttribute("aria-expanded", "true");
+  try {
+    const [items, s] = await Promise.all([searchSymbols(q, ctl.signal), getSettings()]);
+    if (ctl.signal.aborted) return;
+    const have = new Set(s.watch.map(([x]) => x));
+    acItems = items; acActive = -1;
+    if (!items.length) { acInfo("Keine Treffer. Tipp: Symbol direkt im Feld „Symbol“ eintragen."); return; }
+    $("acList").innerHTML = items.map((it, i) => `<li id="ac-${i}" role="option" aria-selected="false" data-i="${i}">
+      <div class="ac-name"><span>${esc(it.name)}</span>${have.has(it.symbol) ? "<em>in Liste</em>" : ""}</div>
+      <div class="ac-sub"><b>${esc(it.symbol)}</b>${it.exch ? " · " + esc(it.exch) : ""}${it.type ? " · " + esc(it.type) : ""}</div></li>`).join("");
+    $("acList").hidden = false; acPlace();
+  } catch (err) {
+    if (ctl.signal.aborted) return;
+    acInfo("Suche nicht erreichbar. Symbol bitte direkt eintragen.");
+  }
+}
+$("nameInput").addEventListener("input", () => {
+  clearTimeout(acTimer);
+  const q = $("nameInput").value.trim();
+  if (editing !== null || q.length < 2) { acHide(); return; } // beim Bearbeiten ist das Symbol fest
+  acTimer = setTimeout(() => acSearch(q), 250);
+});
+$("nameInput").addEventListener("keydown", (e) => {
+  const open = !$("acList").hidden && acItems.length;
+  if (e.key === "Escape" && !$("acList").hidden) { e.preventDefault(); e.stopPropagation(); acHide(); }
+  else if (open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+    e.preventDefault();
+    acSetActive((acActive + (e.key === "ArrowDown" ? 1 : -1) + acItems.length) % acItems.length);
+  } else if (open && e.key === "Enter" && acActive >= 0) { e.preventDefault(); acPick(acActive); }
+  else if (e.key === "Tab") acHide();
+});
+let acBlurTimer = null;
+$("nameInput").addEventListener("blur", () => { acBlurTimer = setTimeout(acHide, 120); });
+$("nameInput").addEventListener("focus", () => clearTimeout(acBlurTimer)); // sonst würde ein verspätetes Blur eine neue Suche abbrechen
+$("acList").addEventListener("mousedown", (e) => { // mousedown statt click, damit das Feld den Fokus nicht vorher verliert
+  const li = e.target.closest("li[data-i]");
+  if (li) { e.preventDefault(); acPick(Number(li.dataset.i)); }
+});
+
 $("settingsTabs").addEventListener("click", (e) => {
   const t = e.target.closest("[data-stab]")?.dataset.stab;
   if (t) switchSettingsTab(t);
@@ -341,6 +421,7 @@ $("watchFilter").addEventListener("input", async (e) => {
 });
 $("addForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  acHide();
   const btn = $("addBtn");
   // Symbol, Name, Stück, Wert prüfen – Fehler stehen im Formular statt in einem Dialog
   let [sym, ...rest] = $("symbolInput").value.trim().split(/\s+/);

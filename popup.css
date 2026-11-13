@@ -109,7 +109,7 @@ code{font:10px Consolas,monospace;color:var(--text)}
 
 /* Formular: Wert hinzufügen / bearbeiten */
 .form-title{display:flex;align-items:center;justify-content:space-between;min-height:18px;margin-bottom:8px}.form-title .caption{margin:0}
-.fields{display:grid;grid-template-columns:1fr 1.25fr;gap:8px}
+.fields{position:relative;display:grid;grid-template-columns:1fr 1.25fr;gap:8px}
 .field{display:block;min-width:0}
 .field span{display:block;margin-bottom:3px;font:9px Consolas,monospace;letter-spacing:.8px;color:var(--muted);text-transform:uppercase}
 .field span i{font-style:normal;letter-spacing:0;text-transform:none;opacity:.7;margin-left:3px}
@@ -117,6 +117,15 @@ input[type=search]{-webkit-appearance:none}
 .field input,#watchFilter{width:100%;border:1px solid #45515a;border-radius:5px;color:var(--text);background:var(--surface);padding:7px 8px}
 .field input::placeholder,#watchFilter::placeholder,#importText::placeholder{color:#6b7a85}
 .field input[readonly]{opacity:.65}
+.ac{position:absolute;left:0;right:0;z-index:5;margin:0;padding:3px;list-style:none;max-height:262px;overflow-y:auto;border:1px solid #5e717b;border-radius:8px;background:#1d252b;box-shadow:0 10px 24px #0009;scrollbar-width:thin;scrollbar-color:#43525c transparent}
+.ac li{padding:6px 9px;border-radius:6px;cursor:pointer}
+.ac li[aria-selected=true],.ac li:hover{background:#183e38}
+.ac-name{display:flex;align-items:center;gap:6px;font-weight:600}
+.ac-name span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-name em{flex:none;font:600 8.5px Consolas,monospace;font-style:normal;letter-spacing:.6px;color:var(--accent);text-transform:uppercase}
+.ac-sub{margin-top:1px;font:9px Consolas,monospace;letter-spacing:.3px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-sub b{color:var(--text);font-weight:600}
+li.ac-info{cursor:default;color:var(--muted);font-size:10.5px}li.ac-info:hover{background:none}
 .f-btn{grid-column:1/-1;justify-self:end;margin-top:2px}
 .form-msg{margin:8px 0 0;font-size:10px;line-height:1.5;color:var(--muted)}.form-msg:empty{display:none}
 .form-msg.error{color:var(--danger)}.form-msg.ok{color:var(--up)}

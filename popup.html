@@ -35,13 +35,14 @@
           <div class="form-title"><span id="formTitle" class="caption">Wert hinzufügen</span><button id="cancelEdit" class="text-button" type="button" hidden>Abbrechen</button></div>
           <div class="fields">
             <label class="field f-sym"><span>Symbol</span><input id="symbolInput" placeholder="SAP.DE" spellcheck="false" autocapitalize="characters"></label>
-            <label class="field f-name"><span>Name <i>optional</i></span><input id="nameInput" placeholder="SAP" spellcheck="false"></label>
+            <label class="field f-name"><span>Name <i>tippen zum Suchen</i></span><input id="nameInput" placeholder="z. B. Nvidia" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="acList"></label>
             <label class="field f-qty"><span>Stück <i>optional</i></span><input id="qtyInput" placeholder="10" inputmode="decimal"></label>
             <label class="field f-val"><span>Wert in € <i>optional</i></span><input id="valueInput" placeholder="1.234,56" inputmode="decimal"></label>
             <button id="addBtn" class="primary-button f-btn" type="submit">Hinzufügen</button>
+            <ul id="acList" class="ac" role="listbox" aria-label="Suchergebnisse" hidden></ul>
           </div>
           <p id="formMsg" class="form-msg" role="status" aria-live="polite"></p>
-          <p class="hint">Yahoo-Symbole, z. B. <code>SAP.DE</code>, <code>AAPL</code>, <code>IWDA.AS</code>, <code>SI=F</code>. Mit Stückzahl fließt der Wert in die Depot-Übersicht ein.</p>
+          <p class="hint">Im Namensfeld nach Firma oder ETF suchen – das Symbol wird automatisch eingetragen (der Suchbegriff geht an Yahoo). Oder Symbol direkt eingeben, z. B. <code>SAP.DE</code>, <code>AAPL</code>, <code>SI=F</code>. Mit Stückzahl fließt der Wert in die Depot-Übersicht ein.</p>
         </form>
         <div class="list-head"><span class="caption">Eigene Werte <span id="listCount"></span></span><input id="watchFilter" type="search" placeholder="Filtern …" aria-label="Eigene Werte filtern" hidden></div>
         <ul id="watchList" class="card"></ul>
@@ -81,7 +82,7 @@
           <dt>Aktualisierung</dt>
           <dd>Kurse werden beim Öffnen geladen und 1 Minute zwischengespeichert. Der Pfeil oben lädt sofort neu.</dd>
           <dt>Eigene Werte</dt>
-          <dd>Über das Zahnrad im Tab „Meine Werte“ hinzufügen: Symbol, optional Name, Stück und Wert in Euro. Mit Stückzahl fließt die Position in die Depot-Übersicht ein. Über das Stift-Symbol änderst du Name, Stück und Wert später; das Papierkorb-Symbol entfernt den Wert (zweiter Klick bestätigt). Yahoo-Symbole: Xetra mit <code>.DE</code> (z. B. <code>SAP.DE</code>), US-Aktien ohne Endung (<code>AAPL</code>), Amsterdam <code>.AS</code>, Futures <code>=F</code>, Devisen <code>=X</code>. Symbole findest du auf finance.yahoo.com.</dd>
+          <dd>Über das Zahnrad im Tab „Meine Werte“ hinzufügen: Im Namensfeld nach Firma oder ETF suchen (ab 2 Buchstaben, z. B. „nvi“) und den Treffer wählen – Symbol und Name werden eingetragen. Dazu optional Stück und Wert in Euro. Die Suche läuft bei Yahoo; Stück und Wert werden nicht gesendet. Mit Stückzahl fließt die Position in die Depot-Übersicht ein. Über das Stift-Symbol änderst du Name, Stück und Wert später; das Papierkorb-Symbol entfernt den Wert (zweiter Klick bestätigt). Yahoo-Symbole: Xetra mit <code>.DE</code> (z. B. <code>SAP.DE</code>), US-Aktien ohne Endung (<code>AAPL</code>), Amsterdam <code>.AS</code>, Futures <code>=F</code>, Devisen <code>=X</code>. Symbole findest du auf finance.yahoo.com.</dd>
           <dt>Liste importieren</dt>
           <dd>In den Einstellungen lassen sich ganze Depots einfügen. Erkannt werden Positionen anhand der ISIN; Stück und Wert siehst du in den Einstellungen und beim Hover über den Namen. Bei Freitext gilt je Position die Reihenfolge Name, ISIN, Stück, Wert.</dd>
           <dt>Depot-Übersicht</dt>
