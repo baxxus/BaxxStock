@@ -2,12 +2,12 @@
 Stand: 2026-11-13
 
 ## Aktueller Stand
-Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.12.0. Tab „Meine Werte“ neu gestaltet: Depot-Übersicht (Wert, Tagesveränderung, Aufteilung), zweizeilige Positionszeilen, einklappbare Gruppen mit Summen, Sortierung Name/Wert/Heute. Icon-Badge (▲/▼) per Service Worker alle 15 min. Branch `main`, 1.12.0 nicht committet.
+Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.13.0. Tab „Meine Werte“ neu gestaltet: Depot-Übersicht (Wert, Tagesveränderung, Aufteilung), zweizeilige Positionszeilen, einklappbare Gruppen mit Summen, Sortierung Name/Wert/Heute €/Heute %. Icon-Badge (▲/▼) per Service Worker alle 15 min. Branch `main`, 1.13.0 nicht committet.
 
 ## Zuletzt erledigt
 - Summary-Karte samt „Details je Position“ durch Depot-Übersicht ersetzt; Positionswert und Tagesveränderung (€, %) stehen jetzt direkt in jeder Zeile (`posRowHtml`)
 - Gruppen (`GROUPS` in `popup.js`) einklappbar, Zustand in `chrome.storage.local` (`collapsed`); Gruppenzeile zeigt Summe und Tages-%
-- Sortierung um „Heute“ (Δ €, ohne Positionen Δ %) erweitert; Sortieren/Einklappen zeichnet aus dem gemerkten Stand (`last`) neu, ohne Kurse neu zu laden
+- Sortierung: „Heute €“ (Δ € je Position) und „Heute %“ (Kursveränderung in %); ohne Positionen nur Name und „Heute %“, eine gespeicherte €-/Wert-Sortierung fällt dann auf % zurück. Sortieren/Einklappen zeichnet aus dem gemerkten Stand (`last`) neu, ohne Kurse neu zu laden
 - Märkte-Tab unverändert (Tabellen, `rowHtml`)
 - Geprüft im Browser mit gemocktem Chrome/Yahoo (17 Werte: EUR/USD/GBp, ⚠-Anleihe, ohne Bestand, ohne Kurs): Darstellung bei 380 px, alle Sortierungen, Einklappen, Ansicht ohne Positionen
 

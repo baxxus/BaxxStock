@@ -86,7 +86,8 @@ function rowHtml(name, q, pos) {
 
 // ── Meine Werte: Depot-Übersicht, zweizeilige Positionen, einklappbare Gruppen ──
 const GROUPS = [["stocks", "Einzelaktien", ["EQUITY"]], ["etfs", "ETFs", ["ETF", "MUTUALFUND"]], ["other", "Sonstige", null]];
-const SORTS = [["name", "Name", "asc"], ["value", "Wert", "desc"], ["today", "Heute", "desc"]]; // [Schlüssel, Label, erste Richtung]
+// [Schlüssel, Label, erste Richtung, braucht Positionen]; "today" = Veränderung in €, "pct" = Veränderung in %
+const SORTS = [["name", "Name", "asc", false], ["value", "Wert", "desc", true], ["today", "Heute €", "desc", true], ["pct", "Heute %", "desc", false]];
 const signed = (n, d = 2) => (n >= 0 ? "+" : "") + fmt(n, d);
 
 // Eigene Werte nach Yahoo-instrumentType gruppieren (Anleihen kennt Yahoo nicht)
@@ -114,7 +115,7 @@ function sortItems(items, sort, metric) {
 
 function sortBarHtml(sort, hasValues) {
   const [key, dir] = sort.split("-");
-  return `<div class="sortbar"><span>Sortieren</span><div class="seg">${SORTS.filter(([k]) => k !== "value" || hasValues).map(([k, label, first]) => {
+  return `<div class="sortbar"><span>Sortieren</span><div class="seg">${SORTS.filter(([, , , needsPos]) => hasValues || !needsPos).map(([k, label, first]) => {
     const active = key === k, next = active ? (dir === "asc" ? "desc" : "asc") : first;
     return `<button type="button" data-sort="${k}" data-dir="${next}" aria-pressed="${active}" class="${active ? "active" : ""}" title="${label} ${next === "asc" ? "aufsteigend" : "absteigend"} sortieren">${label}${active ? (dir === "asc" ? " ↑" : " ↓") : ""}</button>`;
   }).join("")}</div></div>`;
@@ -172,10 +173,11 @@ let last = null, painted = false;
 async function paintWatch() {
   if (!last) return;
   const { watch, positions, data, summary, tabsHtml } = last;
-  const { sort, collapsed } = await chrome.storage.local.get({ sort: "", collapsed: [] });
+  let { sort, collapsed } = await chrome.storage.local.get({ sort: "", collapsed: [] });
   const rows = Object.fromEntries((summary?.rows || []).map((r) => [r.sym, r]));
-  const key = sort.split("-")[0];
-  const metric = (sym) => (key === "value" ? rows[sym]?.now : summary ? rows[sym]?.delta : data[sym]?.pct);
+  let [key, dir] = sort.split("-");
+  if (!summary && (key === "value" || key === "today")) { key = "pct"; sort = `pct-${dir}`; } // ohne Positionen nur Name/Prozent
+  const metric = (sym) => (key === "value" ? rows[sym]?.now : key === "today" ? rows[sym]?.delta : data[sym]?.pct);
   const groups = splitByType(watch, data).map((g) => {
     const own = [...new Set(g.items.map(([sym]) => sym))].map((sym) => rows[sym]).filter(Boolean);
     const now = own.reduce((t, r) => t + r.now, 0), delta = own.reduce((t, r) => t + r.delta, 0);

@@ -6,7 +6,7 @@
 
 **Börsenkurse im Chrome-Popup – ein Klick, alles Wichtige auf einen Blick.**
 
-![Version](https://img.shields.io/badge/Version-1.12.0-4ce0cc)
+![Version](https://img.shields.io/badge/Version-1.13.0-4ce0cc)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-f59a57)
 ![Lizenz](https://img.shields.io/badge/Lizenz-Apache%202.0-9caab4)
 
@@ -36,7 +36,7 @@ BaxxStock ist eine schlanke Chrome-Erweiterung. Ein Klick auf das Icon zeigt Ind
 - Depot-Übersicht: Gesamtwert, Veränderung zum Vortagesschluss (€ und %) und Aufteilung nach Einzelaktien, ETFs und Sonstige
 - Je Position Wert, Bestand, Kurs und heutige Veränderung in € und %
 - Gruppen einklappbar, Gruppensumme bleibt sichtbar
-- Sortierbar nach Name, Wert oder heutiger Veränderung, auf- und absteigend (Einstellungen werden gespeichert)
+- Sortierbar nach Name, Wert oder heutiger Veränderung (in € oder %), auf- und absteigend (Einstellungen werden gespeichert)
 - Depot-Import: Ansicht der Bank in die Textarea einfügen – Symbole werden über die ISIN gefunden
 - Am Erweiterungs-Icon zeigt ein Badge unten rechts die Richtung: grün ▲ im Plus, rot ▼ im Minus, Tooltip mit der Veränderung in % (Hintergrund-Update alle 15 Minuten)
 
@@ -64,7 +64,7 @@ Die Erweiterung ist (noch) nicht im Chrome Web Store und wird als entpackte Erwe
 | Kurse neu laden | Pfeil-Symbol oben rechts (sonst 1 Minute Zwischenspeicher) |
 | Wert hinzufügen | Zahnrad → Symbol eingeben, optional mit Namen: `ALV.DE Allianz` |
 | Depot importieren | Zahnrad → „Liste importieren“ → Text einfügen → Importieren |
-| Eigene Werte sortieren | „Name“, „Wert“ oder „Heute“ über der Liste; erneuter Klick dreht die Richtung |
+| Eigene Werte sortieren | „Name“, „Wert“, „Heute €“ oder „Heute %“ über der Liste; erneuter Klick dreht die Richtung |
 | Gruppe ein-/ausklappen | Klick auf die Gruppenzeile (z. B. „Einzelaktien“) |
 | Standard-Werte ausblenden | Zahnrad → „Standard-Werte“ → Haken entfernen |
 | Erklärungen lesen | Info-Symbol oben rechts |
