@@ -6,7 +6,7 @@
 
 **Börsenkurse im Chrome-Popup – ein Klick, alles Wichtige auf einen Blick.**
 
-![Version](https://img.shields.io/badge/Version-1.10.2-4ce0cc)
+![Version](https://img.shields.io/badge/Version-1.11.0-4ce0cc)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-f59a57)
 ![Lizenz](https://img.shields.io/badge/Lizenz-Apache%202.0-9caab4)
 
@@ -34,6 +34,7 @@ BaxxStock ist eine schlanke Chrome-Erweiterung. Ein Klick auf das Icon zeigt Ind
 **Meine Werte**
 - Eigene Watchlist mit beliebigen Yahoo-Symbolen (`SAP.DE`, `AAPL`, `IWDA.AS` …)
 - Automatisch gruppiert nach Einzelaktien, ETFs und Sonstige
+- Sortierbar nach Name oder Positionswert, auf- und absteigend (Einstellung wird gespeichert)
 - Depot-Import: Ansicht der Bank in die Textarea einfügen – Symbole werden über die ISIN gefunden
 - Tagesentwicklung der Positionen gesamt (heute vs. Vortagesschluss, in € und %) oberhalb der Liste
 - Am Erweiterungs-Icon zeigt ein Badge unten rechts die Richtung: grün ▲ im Plus, rot ▼ im Minus, Tooltip mit der Veränderung in % (Hintergrund-Update alle 15 Minuten)
@@ -62,6 +63,7 @@ Die Erweiterung ist (noch) nicht im Chrome Web Store und wird als entpackte Erwe
 | Kurse neu laden | Pfeil-Symbol oben rechts (sonst 1 Minute Zwischenspeicher) |
 | Wert hinzufügen | Zahnrad → Symbol eingeben, optional mit Namen: `ALV.DE Allianz` |
 | Depot importieren | Zahnrad → „Liste importieren“ → Text einfügen → Importieren |
+| Eigene Werte sortieren | „Name“ oder „Wert“ über der Liste; erneuter Klick dreht die Richtung |
 | Standard-Werte ausblenden | Zahnrad → „Standard-Werte“ → Haken entfernen |
 | Erklärungen lesen | Info-Symbol oben rechts |
 

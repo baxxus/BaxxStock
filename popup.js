@@ -106,6 +106,26 @@ function splitByType(watch, data) {
   return groups.filter((g) => g.items.length);
 }
 
+// Sortierung der eigenen Werte innerhalb der Gruppen: "name-asc" | "name-desc" | "value-asc" | "value-desc" | "" (Liste)
+// Wert = Positionswert in € aus der Tagesentwicklung; Werte ohne Position stehen immer am Ende.
+const collator = new Intl.Collator("de", { sensitivity: "base", numeric: true });
+function sortItems(items, sort, values) {
+  const [key, dir] = sort.split("-");
+  if (!key) return items;
+  const m = dir === "desc" ? -1 : 1, byName = (a, b) => collator.compare(a[1] || a[0], b[1] || b[0]);
+  return [...items].sort((a, b) => {
+    if (key === "name") return byName(a, b) * m;
+    const va = values[a[0]], vb = values[b[0]];
+    if (va == null || vb == null) return va == null && vb == null ? byName(a, b) : va == null ? 1 : -1;
+    return (va - vb) * m || byName(a, b);
+  });
+}
+function sortBarHtml(sort) {
+  const [key, dir] = sort.split("-");
+  return `<div class="sortbar"><span>Sortieren</span>${[["name", "Name"], ["value", "Wert"]].map(([k, label]) =>
+    `<button type="button" data-sort="${k}" aria-pressed="${key === k}" class="${key === k ? "active" : ""}" title="${label} ${(key === k ? dir === "asc" : k === "value") ? "absteigend" : "aufsteigend"} sortieren">${label}${key === k ? (dir === "asc" ? " ↑" : " ↓") : ""}</button>`).join("")}</div>`;
+}
+
 async function render(force = false) {
   if (force) await chrome.storage.local.remove("cache");
   const s = await getSettings();
@@ -131,9 +151,11 @@ async function render(force = false) {
   $("refresh").classList.remove("spinning");
   let sumHtml = "";
   if (tab === "watch") {
-    groups = splitByType(s.watch, data);
     const summary = await loadSummary(s.watch, positions, data).catch(() => null);
-    sumHtml = summaryHtml(summary);
+    const { sort } = await chrome.storage.local.get({ sort: "" });
+    const values = Object.fromEntries((summary?.rows || []).map((r) => [r.sym, r.now]));
+    groups = splitByType(s.watch, data).map((g) => ({ ...g, items: sortItems(g.items, sort, values) }));
+    sumHtml = summaryHtml(summary) + sortBarHtml(sort);
     chrome.storage.local.set({ daySummary: summary });
     updateIcon(summary).catch(() => {});
   }
@@ -165,6 +187,15 @@ function showView(v) {
 $("version").textContent = "v" + chrome.runtime.getManifest().version;
 document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => showView("content")));
 $("content").addEventListener("click", async (e) => {
+  const k = e.target.closest("[data-sort]")?.dataset.sort;
+  if (k) { // aktive Spalte: Richtung umschalten; neue Spalte: Name aufsteigend, Wert absteigend
+    const { sort } = await chrome.storage.local.get({ sort: "" });
+    const [key, dir] = sort.split("-");
+    const next = key === k ? (dir === "asc" ? "desc" : "asc") : (k === "name" ? "asc" : "desc");
+    await chrome.storage.local.set({ sort: `${k}-${next}` });
+    render();
+    return;
+  }
   const t = e.target.closest("[data-tab]")?.dataset.tab;
   if (!t) return;
   await chrome.storage.local.set({ tab: t });

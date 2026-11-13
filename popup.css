@@ -49,6 +49,11 @@ td.chg{text-align:right;font-variant-numeric:tabular-nums;width:76px;font-weight
 .sum-row{display:flex;justify-content:space-between;color:var(--muted);font-size:10.5px;line-height:1.7;font-variant-numeric:tabular-nums}
 .sum-details{margin-top:6px;border-top:1px solid var(--line);padding-top:6px}.sum-details summary{cursor:pointer;color:var(--accent);font-size:10px;margin-bottom:4px}
 .sum-details b{font-weight:600;margin-left:6px}
+.sortbar{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:0 0 -6px;font:9px Consolas,monospace;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.sortbar span{margin-right:2px}
+.sortbar button{padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--muted);font:600 10px 'Segoe UI',system-ui,sans-serif;letter-spacing:0;text-transform:none}
+.sortbar button:hover{color:var(--text)}
+.sortbar button.active{color:var(--accent);background:#183e38;border-color:var(--accent)}
 .sum-note{margin-top:4px;color:var(--muted);font-size:9.5px}
 .up{color:var(--up)}.down{color:var(--down)}.err{color:var(--muted)}
 .dot{display:inline-block;width:5px;height:5px;margin:0 8px 2px 0;vertical-align:middle;transform:skewY(-20deg);background:transparent;box-shadow:inset 0 0 0 1px #5b6a74}
