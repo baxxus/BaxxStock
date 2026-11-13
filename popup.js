@@ -10,7 +10,6 @@ const MARKETS = [
     ["BZ=F", "Öl Brent"], ["BTC-EUR", "Bitcoin (EUR)"] ] }
 ];
 const DEFAULT_WATCH = [["SAP.DE", "SAP"], ["ALV.DE", "Allianz"], ["SIE.DE", "Siemens"]];
-const CACHE_MS = 60 * 1000;
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n, d = 2) => n.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -31,46 +30,11 @@ function posText(p) {
   return parts.join(" · ");
 }
 
-async function pool(items, limit, fn) {
-  let next = 0;
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) { const i = next++; await fn(items[i], i); }
-  }));
-}
-
 async function resolveIsin(isin) {
   const res = await fetch(`https://query1.finance.yahoo.com/v1/finance/search?q=${isin}&quotesCount=5&newsCount=0&listsCount=0`);
   if (!res.ok) throw new Error(res.status);
   const q = (await res.json()).quotes?.find((x) => x.symbol);
   return q ? { symbol: q.symbol, name: q.longname || q.shortname || q.symbol } : null;
-}
-
-async function fetchQuote(symbol) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=15m`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(res.status);
-  const json = await res.json();
-  const r = json?.chart?.result?.[0];
-  if (!r) throw new Error("no data");
-  const m = r.meta;
-  const price = m.regularMarketPrice;
-  const prev = m.chartPreviousClose ?? m.previousClose;
-  const closes = (r.indicators?.quote?.[0]?.close || []).filter((v) => v != null);
-  return { price, prev, change: price - prev, pct: prev ? ((price - prev) / prev) * 100 : 0,
-           currency: m.currency, type: m.instrumentType || "", closes, time: m.regularMarketTime, period: m.currentTradingPeriod };
-}
-
-async function fetchAll(symbols) {
-  const { cache = {} } = await chrome.storage.local.get("cache");
-  const now = Date.now();
-  const out = {};
-  await pool(symbols, 6, async (s) => { // begrenzt parallel, sonst drosselt Yahoo bei langen Listen
-    if (cache[s] && cache[s].q?.period && cache[s].q.type !== undefined && now - cache[s].t < CACHE_MS) { out[s] = cache[s].q; return; }
-    try { const q = await fetchQuote(s); out[s] = q; cache[s] = { t: now, q }; }
-    catch { out[s] = cache[s]?.q || null; }
-  });
-  await chrome.storage.local.set({ cache });
-  return out;
 }
 
 function sparkline(values, up) {
@@ -120,6 +84,16 @@ function rowHtml(name, q, pos) {
     <td class="chg ${cls}">${sign}${fmt(q.pct)} %</td></tr>`;
 }
 
+function summaryHtml(s) {
+  if (!s) return "";
+  const cls = s.dir > 0 ? "up" : s.dir < 0 ? "down" : "", arrow = s.dir > 0 ? "▲" : s.dir < 0 ? "▼" : "–", sign = s.dir > 0 ? "+" : "";
+  const partial = s.used < s.total ? `<div class="sum-note">${s.used} von ${s.total} Positionen berücksichtigt (Rest ohne Kurs oder Stückzahl)</div>` : "";
+  return `<div class="summary"><span class="caption">Heute vs. gestern</span>
+    <div class="sum-main ${cls}"><span class="sum-arrow" aria-hidden="true">${arrow}</span>${sign}${fmt(s.delta)} € <span class="sum-pct">${sign}${fmt(s.pct)} %</span></div>
+    <div class="sum-row"><span>Gesamtwert jetzt</span><span>${fmt(s.now)} €</span></div>
+    <div class="sum-row"><span>Vortagesschluss</span><span>${fmt(s.prev)} €</span></div>${partial}</div>`;
+}
+
 // Eigene Werte nach Yahoo-instrumentType gruppieren (Anleihen kennt Yahoo nicht)
 function splitByType(watch, data) {
   const kinds = [["Einzelaktien", ["EQUITY"]], ["ETFs", ["ETF", "MUTUALFUND"]]];
@@ -152,8 +126,15 @@ async function render(force = false) {
   $("refresh").classList.add("spinning");
   const data = await fetchAll(symbols);
   $("refresh").classList.remove("spinning");
-  if (tab === "watch") groups = splitByType(s.watch, data);
-  $("content").innerHTML = tabsHtml + groups.map((g) =>
+  let sumHtml = "";
+  if (tab === "watch") {
+    groups = splitByType(s.watch, data);
+    const summary = await loadSummary(s.watch, positions, data).catch(() => null);
+    sumHtml = summaryHtml(summary);
+    chrome.storage.local.set({ daySummary: summary });
+    updateIcon(summary).catch(() => {});
+  }
+  $("content").innerHTML = tabsHtml + sumHtml + groups.map((g) =>
     `${g.group ? `<span class="caption">${g.group}</span>` : ""}<table>${g.items.map(([sym, name]) => rowHtml(name || sym, data[sym], positions[sym])).join("")}</table>`
   ).join("");
   $("updated").textContent = "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });

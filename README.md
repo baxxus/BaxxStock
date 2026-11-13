@@ -6,7 +6,7 @@
 
 **Börsenkurse im Chrome-Popup – ein Klick, alles Wichtige auf einen Blick.**
 
-![Version](https://img.shields.io/badge/Version-1.9.0-4ce0cc)
+![Version](https://img.shields.io/badge/Version-1.10.0-4ce0cc)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-f59a57)
 ![Lizenz](https://img.shields.io/badge/Lizenz-Apache%202.0-9caab4)
 
@@ -35,6 +35,8 @@ BaxxStock ist eine schlanke Chrome-Erweiterung. Ein Klick auf das Icon zeigt Ind
 - Eigene Watchlist mit beliebigen Yahoo-Symbolen (`SAP.DE`, `AAPL`, `IWDA.AS` …)
 - Automatisch gruppiert nach Einzelaktien, ETFs und Sonstige
 - Depot-Import: Ansicht der Bank in die Textarea einfügen – Symbole werden über die ISIN gefunden
+- Tagesentwicklung der Positionen gesamt (heute vs. Vortagesschluss, in € und %) oberhalb der Liste
+- Am Erweiterungs-Icon zeigt ein Punkt unten rechts die Richtung: grün ▲ im Plus, rot ▼ im Minus (Hintergrund-Update alle 15 Minuten)
 
 **Anzeige**
 - Kurs, Veränderung zum Vortag in % und Mini-Kursverlauf des Handelstages
@@ -80,7 +82,7 @@ Unterstützt werden zwei Formate:
 - Es gibt keinen eigenen Server – das Popup spricht direkt mit Yahoo Finance
 - Beim Import werden **nur die ISINs** an Yahoo gesendet (Symbolsuche)
 - Stück und Wert deiner Positionen bleiben **lokal im Browser** und werden nicht über Chrome Sync geteilt
-- Berechtigungen: nur `storage` sowie Zugriff auf `query1`/`query2.finance.yahoo.com`
+- Berechtigungen: `storage`, `alarms` (Hintergrund-Update des Icons) sowie Zugriff auf `query1`/`query2.finance.yahoo.com`
 
 ## Datenquelle & Hinweis
 
@@ -92,7 +94,9 @@ Kurse stammen von Yahoo Finance (inoffizielle Schnittstelle, kein API-Key nötig
 |---|---|
 | `manifest.json` | Chrome-Manifest (V3) |
 | `popup.html` / `popup.css` | Oberfläche des Popups |
-| `popup.js` | Kursabruf, Darstellung, Einstellungen |
+| `popup.js` | Darstellung, Einstellungen |
+| `core.js` | Kursabruf, Tagesentwicklung, Icon-Dot (gemeinsam für Popup und Service Worker) |
+| `background.js` | Service Worker: aktualisiert den Icon-Dot im Hintergrund |
 | `import.js` | Parser für den Listen-Import |
 
 Es gibt keinen Build-Schritt und keine Abhängigkeiten – Dateien ändern, in `chrome://extensions` neu laden, fertig.
