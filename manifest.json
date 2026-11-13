@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BaxxStock",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "description": "Indizes, Devisen, Rohstoffe und eigene Aktien als schnelle Übersicht im Popup.",
   "action": {
     "default_popup": "popup.html",

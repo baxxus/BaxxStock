@@ -2,21 +2,18 @@
 Stand: 2026-11-13
 
 ## Aktueller Stand
-Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.10.1. Neu: Tagesentwicklung der eigenen Positionen gesamt (heute vs. Vortagesschluss) als Karte im Tab „Meine Werte“ und als Dot am Toolbar-Icon (grün ▲ / rot ▼). Der Dot wird per Service Worker (`background.js`, Alarm alle 15 min) aktualisiert; Logik in `core.js`. Branch `main`. 1.10.1 (nicht committet): Plausibilitätsprüfung und Detailliste, weil bei echten Daten ein unplausibler Gesamtwert (~10,9 Mio €) erschien.
+Chrome-Erweiterung (MV3) mit Märkte-Übersicht und eigener Watchlist im Popup, Version 1.10.2. Tagesentwicklung der eigenen Positionen gesamt (heute vs. Vortagesschluss) als Karte im Tab „Meine Werte“ mit „Details je Position“, dazu ein natives Chrome-Badge am Toolbar-Icon (grün ▲ / rot ▼, Tooltip mit %). Aktualisierung per Service Worker (`background.js`, Alarm alle 15 min); Logik in `core.js`. Branch `main`, 1.10.2 nicht committet.
 
 ## Zuletzt erledigt
-- Fix 1.10.1: Stück × Kurs weicht um mehr als Faktor 2 vom importierten Wert ab → importierter Wert wird verwendet (Position mit ⚠ markiert); doppelte Symbole zählen nur einmal; „Details je Position“ (Top 15 nach |Δ|) in der Summary-Karte; Icon-Dot größer (Radius 38 %)
-- `core.js` neu: `fetchQuote`/`fetchAll`/`pool` aus `popup.js` verschoben, dazu `computeSummary` (qty × Kurs, Fremdwährung via Yahoo `<CUR>EUR=X`, GBp → GBP; nur Wert → Wert als aktuell, Vortag über Tages-%), `updateIcon` (OffscreenCanvas)
-- `background.js` neu, Manifest: Permission `alarms`, Service Worker, Version 1.10.1
-- Popup: Summary-Karte (Δ €, Δ %, Gesamtwert, Vortagesschluss, „x von y Positionen“), Info-Text, README
-- Geprüft: `computeSummary` in Node (EUR/USD/GBp/nur Wert/fehlende Daten), Popup im Browser mit gemocktem Chrome/Yahoo, Icon-Rendering 16/32 px, Service-Worker-Ablauf mit Mock
+- 1.10.2: gezeichneten Icon-Dot (OffscreenCanvas) durch `chrome.action.setBadgeText` ersetzt – gleiche Position/Größe wie bei anderen Erweiterungen (z. B. BaxxFeed); Titel des Icons zeigt die Veränderung in %
+- Ursache des Gesamtwerts von ~10,9 Mio € geklärt: Anleihe „2,5 % NEDERLD 24/34“ – Nominal × Kurs in Prozent ergab rund das Hundertfache; die Plausibilitätsprüfung (Faktor 2 zum Importwert) fängt das jetzt ab (⚠)
+- Geprüft: Service-Worker-Ablauf mit gemocktem `chrome.action` (Badge-Text, Farben, Titel, Reset)
 
 ## Offen
-- [ ] Ursache des unplausiblen Gesamtwerts mit echten Daten klären: Details je Position öffnen, ⚠-Positionen ansehen (vermutlich falsches Symbol/Nominal bei Anleihen/Fonds oder falsche Stückzahl aus dem Import)
-- [ ] In echtem Chrome (entpackte Erweiterung) prüfen: Dot am Icon, Alarm im Hintergrund, echte Yahoo-FX-Kurse, Drosselung durch 15-min-Abfragen
-- [ ] Import mit echten Depotansichten der Bank(en) testen und Parser nachschärfen
-- [ ] Sync-Limit bei sehr langen Listen prüfen
-- [ ] Screenshots in `docs/screenshots/` zeigen die neue Summary-Karte noch nicht
+- [ ] In echtem Chrome prüfen: Badge-Darstellung, Alarm im Hintergrund, Drosselung durch 15-min-Abfragen
+- [ ] Optional: Anleihen sauber rechnen (Nominal × Kurs / 100), statt auf den Importwert auszuweichen
+- [ ] Import mit weiteren Depotansichten testen und Parser nachschärfen
+- [ ] Screenshots in `docs/screenshots/` zeigen die Summary-Karte noch nicht
 
 ## Nächster Schritt
-Erweiterung in Chrome neu laden (neue Permission `alarms` bestätigen) und prüfen, ob der Dot am Icon erscheint.
+Erweiterung in Chrome neu laden und das Badge neben dem BaxxFeed-Badge vergleichen.

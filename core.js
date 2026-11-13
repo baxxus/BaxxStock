@@ -96,30 +96,13 @@ async function loadSummary(watch, positions, quotes) {
   return computeSummary(watch, positions, quotes, fx);
 }
 
-// Toolbar-Icon: Dot unten rechts (grün ▲ / rot ▼); ohne Richtung Standard-Icon
+// Toolbar-Icon: natives Chrome-Badge unten rechts (grün ▲ / rot ▼), wie bei anderen Erweiterungen; ohne Richtung leer
 async function updateIcon(summary) {
-  const sizes = [16, 32, 48, 128];
-  if (!summary?.dir) {
-    await chrome.action.setIcon({ path: Object.fromEntries(sizes.map((s) => [s, `icons/icon${s}.png`])) });
-    return;
-  }
-  const up = summary.dir > 0;
-  const imageData = {};
-  for (const size of [16, 32]) {
-    const blob = await (await fetch(chrome.runtime.getURL(`icons/icon${size}.png`))).blob();
-    const bmp = await createImageBitmap(blob);
-    const c = new OffscreenCanvas(size, size), g = c.getContext("2d");
-    g.drawImage(bmp, 0, 0, size, size);
-    const r = size * 0.38, cx = size - r, cy = size - r;
-    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
-    g.fillStyle = up ? "#5fe3a1" : "#ff7078"; g.fill();
-    g.lineWidth = Math.max(1, size / 16); g.strokeStyle = "#14191d"; g.stroke();
-    const k = r * 0.66, s = up ? 1 : -1; // Pfeil, nach unten gespiegelt
-    const pts = [[0, -1], [0.95, 0], [0.38, 0], [0.38, 0.95], [-0.38, 0.95], [-0.38, 0], [-0.95, 0]];
-    g.beginPath();
-    pts.forEach(([x, y], i) => g[i ? "lineTo" : "moveTo"](cx + x * k, cy + y * k * s));
-    g.closePath(); g.fillStyle = "#0b1f16"; g.fill();
-    imageData[size] = g.getImageData(0, 0, size, size);
-  }
-  await chrome.action.setIcon({ imageData });
+  const dir = summary?.dir || 0;
+  await chrome.action.setBadgeText({ text: dir > 0 ? "▲" : dir < 0 ? "▼" : "" });
+  await chrome.action.setTitle({ title: summary
+    ? `BaxxStock · eigene Werte heute ${summary.pct >= 0 ? "+" : ""}${summary.pct.toFixed(2).replace(".", ",")} %` : "BaxxStock" });
+  if (!dir) return;
+  await chrome.action.setBadgeBackgroundColor({ color: dir > 0 ? "#5fe3a1" : "#ff7078" });
+  await chrome.action.setBadgeTextColor({ color: "#0b1f16" });
 }

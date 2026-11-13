@@ -1,4 +1,4 @@
-// BaxxStock – Service Worker: hält den Dot am Toolbar-Icon aktuell (Tagesentwicklung der eigenen Werte)
+// BaxxStock – Service Worker: hält das Badge am Toolbar-Icon aktuell (Tagesentwicklung der eigenen Werte)
 importScripts("core.js");
 
 const ALARM = "icon-refresh";

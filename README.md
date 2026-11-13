@@ -6,7 +6,7 @@
 
 **Börsenkurse im Chrome-Popup – ein Klick, alles Wichtige auf einen Blick.**
 
-![Version](https://img.shields.io/badge/Version-1.10.1-4ce0cc)
+![Version](https://img.shields.io/badge/Version-1.10.2-4ce0cc)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-f59a57)
 ![Lizenz](https://img.shields.io/badge/Lizenz-Apache%202.0-9caab4)
 
@@ -36,7 +36,7 @@ BaxxStock ist eine schlanke Chrome-Erweiterung. Ein Klick auf das Icon zeigt Ind
 - Automatisch gruppiert nach Einzelaktien, ETFs und Sonstige
 - Depot-Import: Ansicht der Bank in die Textarea einfügen – Symbole werden über die ISIN gefunden
 - Tagesentwicklung der Positionen gesamt (heute vs. Vortagesschluss, in € und %) oberhalb der Liste
-- Am Erweiterungs-Icon zeigt ein Punkt unten rechts die Richtung: grün ▲ im Plus, rot ▼ im Minus (Hintergrund-Update alle 15 Minuten)
+- Am Erweiterungs-Icon zeigt ein Badge unten rechts die Richtung: grün ▲ im Plus, rot ▼ im Minus, Tooltip mit der Veränderung in % (Hintergrund-Update alle 15 Minuten)
 
 **Anzeige**
 - Kurs, Veränderung zum Vortag in % und Mini-Kursverlauf des Handelstages
@@ -95,8 +95,8 @@ Kurse stammen von Yahoo Finance (inoffizielle Schnittstelle, kein API-Key nötig
 | `manifest.json` | Chrome-Manifest (V3) |
 | `popup.html` / `popup.css` | Oberfläche des Popups |
 | `popup.js` | Darstellung, Einstellungen |
-| `core.js` | Kursabruf, Tagesentwicklung, Icon-Dot (gemeinsam für Popup und Service Worker) |
-| `background.js` | Service Worker: aktualisiert den Icon-Dot im Hintergrund |
+| `core.js` | Kursabruf, Tagesentwicklung, Icon-Badge (gemeinsam für Popup und Service Worker) |
+| `background.js` | Service Worker: aktualisiert das Icon-Badge im Hintergrund |
 | `import.js` | Parser für den Listen-Import |
 
 Es gibt keinen Build-Schritt und keine Abhängigkeiten – Dateien ändern, in `chrome://extensions` neu laden, fertig.
