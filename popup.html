@@ -24,23 +24,48 @@
 
     <section id="editor" hidden>
       <div class="settings-heading"><h2>Einstellungen</h2><button class="text-button" type="button" data-back>Zurück zur Liste →</button></div>
-      <span class="caption">Eigene Werte</span>
-      <div class="card">
-        <p class="hint">Yahoo-Symbole, z. B. <code>SAP.DE</code>, <code>ALV.DE</code>, <code>AAPL</code>, <code>IWDA.AS</code>, <code>SI=F</code>. Optional mit Namen: <code>ALV.DE Allianz</code></p>
-        <form id="addForm">
-          <input id="symbolInput" placeholder="Symbol [Name]" autocomplete="off">
-          <button class="primary-button" type="submit">Hinzufügen</button>
+      <div class="tabs" id="settingsTabs" role="tablist">
+        <button type="button" role="tab" data-stab="values">Meine Werte <span class="count" id="watchCount"></span></button>
+        <button type="button" role="tab" data-stab="import">Import</button>
+        <button type="button" role="tab" data-stab="markets">Märkte</button>
+      </div>
+
+      <div id="pane-values" role="tabpanel">
+        <form id="addForm" class="card" autocomplete="off" novalidate>
+          <div class="form-title"><span id="formTitle" class="caption">Wert hinzufügen</span><button id="cancelEdit" class="text-button" type="button" hidden>Abbrechen</button></div>
+          <div class="fields">
+            <label class="field f-sym"><span>Symbol</span><input id="symbolInput" placeholder="SAP.DE" spellcheck="false" autocapitalize="characters"></label>
+            <label class="field f-name"><span>Name <i>optional</i></span><input id="nameInput" placeholder="SAP" spellcheck="false"></label>
+            <label class="field f-qty"><span>Stück <i>optional</i></span><input id="qtyInput" placeholder="10" inputmode="decimal"></label>
+            <label class="field f-val"><span>Wert in € <i>optional</i></span><input id="valueInput" placeholder="1.234,56" inputmode="decimal"></label>
+            <button id="addBtn" class="primary-button f-btn" type="submit">Hinzufügen</button>
+          </div>
+          <p id="formMsg" class="form-msg" role="status" aria-live="polite"></p>
+          <p class="hint">Yahoo-Symbole, z. B. <code>SAP.DE</code>, <code>AAPL</code>, <code>IWDA.AS</code>, <code>SI=F</code>. Mit Stückzahl fließt der Wert in die Depot-Übersicht ein.</p>
         </form>
-        <ul id="watchList"></ul>
+        <div class="list-head"><span class="caption">Eigene Werte <span id="listCount"></span></span><input id="watchFilter" type="search" placeholder="Filtern …" aria-label="Eigene Werte filtern" hidden></div>
+        <ul id="watchList" class="card"></ul>
+        <p class="hint foot">Symbole und Namen werden über Chrome Sync geteilt, Stück und Wert bleiben nur in diesem Browser.</p>
       </div>
-      <span class="caption">Liste importieren</span>
-      <div class="card">
-        <p class="hint">Depotansicht der Bank direkt einfügen (Name, Stück, Wert werden übernommen) oder Tabelle mit den Spalten <code>Name</code>, <code>ISIN</code>, <code>Stück/Nominal</code>, <code>Wert</code> – getrennt durch Tab oder Semikolon. Die Symbole werden über die ISIN bei Yahoo gesucht (nur die ISINs werden gesendet). Stück und Wert bleiben lokal im Browser.</p>
-        <textarea id="importText" rows="6" spellcheck="false" placeholder="SAP SE;DE0007164600;10;1.234,56"></textarea>
-        <div class="import-row"><button id="importBtn" class="primary-button" type="button">Importieren</button><span id="importStatus" class="hint"></span></div>
+
+      <div id="pane-import" role="tabpanel" hidden>
+        <div class="card">
+          <p class="hint">Depotansicht der Bank direkt einfügen. Die Symbole werden über die ISIN bei Yahoo gesucht – nur die ISINs werden gesendet. Stück und Wert bleiben lokal im Browser.</p>
+          <textarea id="importText" rows="8" spellcheck="false" placeholder="SAP SE;DE0007164600;10;1.234,56"></textarea>
+          <div class="import-row"><button id="importBtn" class="primary-button" type="button">Importieren</button><span id="importStatus" class="hint" role="status" aria-live="polite"></span></div>
+          <details class="formats"><summary>Welche Formate?</summary>
+            <p class="hint"><b>Freitext</b> aus der Depotansicht: je Position die Reihenfolge Name, ISIN, Stück, Wert.</p>
+            <p class="hint"><b>Tabelle</b> mit den Spalten <code>Name</code>, <code>ISIN</code>, <code>Stück/Nominal</code>, <code>Wert</code>, getrennt durch Tab oder Semikolon. Bereits vorhandene Werte werden aktualisiert.</p>
+          </details>
+        </div>
       </div>
-      <span class="caption">Standard-Werte</span>
-      <div id="marketList" class="card"></div>
+
+      <div id="pane-markets" role="tabpanel" hidden>
+        <div class="card">
+          <div class="market-tools"><span class="hint">Im Tab „Märkte“ anzeigen</span><span><button class="text-button" type="button" data-all="on">alle</button> · <button class="text-button" type="button" data-all="off">keine</button></span></div>
+          <div id="marketList"></div>
+        </div>
+      </div>
     </section>
 
     <section id="info" hidden>
@@ -56,7 +81,7 @@
           <dt>Aktualisierung</dt>
           <dd>Kurse werden beim Öffnen geladen und 1 Minute zwischengespeichert. Der Pfeil oben lädt sofort neu.</dd>
           <dt>Eigene Werte</dt>
-          <dd>Über das Zahnrad hinzufügen. Yahoo-Symbole: Xetra mit <code>.DE</code> (z. B. <code>SAP.DE</code>), US-Aktien ohne Endung (<code>AAPL</code>), Amsterdam <code>.AS</code>, Futures <code>=F</code>, Devisen <code>=X</code>. Symbole findest du auf finance.yahoo.com.</dd>
+          <dd>Über das Zahnrad im Tab „Meine Werte“ hinzufügen: Symbol, optional Name, Stück und Wert in Euro. Mit Stückzahl fließt die Position in die Depot-Übersicht ein. Über das Stift-Symbol änderst du Name, Stück und Wert später; das Papierkorb-Symbol entfernt den Wert (zweiter Klick bestätigt). Yahoo-Symbole: Xetra mit <code>.DE</code> (z. B. <code>SAP.DE</code>), US-Aktien ohne Endung (<code>AAPL</code>), Amsterdam <code>.AS</code>, Futures <code>=F</code>, Devisen <code>=X</code>. Symbole findest du auf finance.yahoo.com.</dd>
           <dt>Liste importieren</dt>
           <dd>In den Einstellungen lassen sich ganze Depots einfügen. Erkannt werden Positionen anhand der ISIN; Stück und Wert siehst du in den Einstellungen und beim Hover über den Namen. Bei Freitext gilt je Position die Reihenfolge Name, ISIN, Stück, Wert.</dd>
           <dt>Depot-Übersicht</dt>

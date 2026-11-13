@@ -225,14 +225,72 @@ async function render(force = false) {
   $("updated").textContent = "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
 
+// ── Einstellungen: Meine Werte (hinzufügen/bearbeiten), Import, Märkte ──
+let settingsTab = "values", editing = null, filterText = "", confirmDel = null;
+const ICON_EDIT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>`;
+const ICON_DEL = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M6.5 7l1 12h9l1-12M9.5 7V4.5h5V7"/></svg>`;
+// Feld lesen: leer, ungültig oder Zahl (deutsche und englische Schreibweise, z. B. "1.234,56")
+const parsedField = (el) => { const t = el.value.trim(); if (!t) return { empty: true }; const n = parseNumber(t); return n === null ? { bad: true } : { n }; };
+
+function setMsg(text, kind = "") { const m = $("formMsg"); m.textContent = text; m.className = "form-msg" + (kind ? " " + kind : ""); }
+function resetForm() {
+  editing = null;
+  $("addForm").reset();
+  $("symbolInput").readOnly = false;
+  $("formTitle").textContent = "Wert hinzufügen";
+  $("addBtn").textContent = "Hinzufügen";
+  $("cancelEdit").hidden = true;
+  setMsg("");
+}
+function startEdit(sym, s, positions) {
+  const entry = s.watch.find(([x]) => x === sym), p = positions[sym] || {};
+  if (!entry) return;
+  editing = sym;
+  $("symbolInput").value = sym; $("symbolInput").readOnly = true;
+  $("nameInput").value = entry[1] === sym ? "" : entry[1];
+  $("qtyInput").value = p.qty != null ? String(p.qty).replace(".", ",") : "";
+  $("valueInput").value = p.value != null ? p.value.toLocaleString("de-DE", { maximumFractionDigits: 2 }) : "";
+  $("formTitle").textContent = `Bearbeiten: ${entry[1]}`;
+  $("addBtn").textContent = "Speichern";
+  $("cancelEdit").hidden = false;
+  setMsg("");
+  $("qtyInput").focus();
+}
+
+function switchSettingsTab(t) {
+  settingsTab = t;
+  document.querySelectorAll("#settingsTabs [data-stab]").forEach((b) => {
+    const on = b.dataset.stab === t;
+    b.classList.toggle("active", on); b.setAttribute("aria-selected", on);
+  });
+  for (const id of ["values", "import", "markets"]) $("pane-" + id).hidden = id !== t;
+}
+
+function watchListHtml(s, positions) {
+  const q = filterText.trim().toLowerCase();
+  const rows = s.watch.map((w, i) => [...w, i]).filter(([sym, name]) => !q || `${sym} ${name}`.toLowerCase().includes(q));
+  if (!rows.length) return `<li class="empty-list">${s.watch.length ? "Kein Treffer." : "Noch keine eigenen Werte. Oben ein Symbol eintragen oder im Tab „Import“ ein Depot einfügen."}</li>`;
+  return rows.map(([sym, name, i]) => {
+    const p = positions[sym], del = confirmDel === sym;
+    return `<li class="${editing === sym ? "editing" : ""}"><span class="w-main"><span class="w-name" title="${esc(name)}">${esc(name)}</span>
+      <span class="w-sub">${esc(sym)} · ${p && (p.qty != null || p.value != null) ? posText(p) : `<span class="none">keine Position</span>`}</span></span>
+      <span class="w-actions"><button type="button" data-edit="${esc(sym)}" title="Name, Stück und Wert bearbeiten" aria-label="${esc(name)} bearbeiten">${ICON_EDIT}</button>
+      <button type="button" data-del="${esc(sym)}" class="${del ? "confirm" : ""}" title="${del ? "Zum Entfernen erneut klicken" : "Entfernen"}" aria-label="${esc(name)} entfernen">${del ? "Entfernen?" : ICON_DEL}</button></span></li>`;
+  }).join("");
+}
+
 async function renderEditor() {
   const s = await getSettings();
   const positions = await getPositions();
   $("marketList").innerHTML = MARKETS.map((g) => `<div class="mgroup"><div class="mhead">${g.group}</div>` +
     g.items.map(([sym, name]) => `<label class="mitem"><input type="checkbox" data-sym="${sym}" ${s.hidden.includes(sym) ? "" : "checked"}> ${name}</label>`).join("") +
     `</div>`).join("");
-  $("watchList").innerHTML = s.watch.map(([sym, name], i) =>
-    `<li><span>${esc(name)} <small>(${esc(sym)})</small>${positions[sym] ? `<br><small>${posText(positions[sym])}</small>` : ""}</span><button data-i="${i}" title="Entfernen">✕</button></li>`).join("");
+  $("watchCount").textContent = s.watch.length || "";
+  $("listCount").textContent = s.watch.length ? `· ${s.watch.length}` : "";
+  $("watchFilter").hidden = s.watch.length <= 6;
+  if (s.watch.length <= 6) filterText = "";
+  $("watchList").innerHTML = watchListHtml(s, positions);
+  switchSettingsTab(settingsTab);
 }
 
 let view = "content";
@@ -272,31 +330,69 @@ $("content").addEventListener("click", async (e) => {
 $("refresh").addEventListener("click", () => { showView("content"); render(true); });
 $("toggleEdit").addEventListener("click", () => { showView(view === "editor" ? "content" : "editor"); if (view === "editor") renderEditor(); });
 $("toggleInfo").addEventListener("click", () => showView(view === "info" ? "content" : "info"));
+$("settingsTabs").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-stab]")?.dataset.stab;
+  if (t) switchSettingsTab(t);
+});
+$("cancelEdit").addEventListener("click", () => { resetForm(); renderEditor(); });
+$("watchFilter").addEventListener("input", async (e) => {
+  filterText = e.target.value;
+  $("watchList").innerHTML = watchListHtml(await getSettings(), await getPositions());
+});
 $("addForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const raw = $("symbolInput").value.trim();
-  if (!raw) return;
-  const [sym, ...rest] = raw.split(/\s+/);
-  const name = rest.join(" ");
-  const symbol = sym.toUpperCase();
-  try { await fetchQuote(symbol); } catch { alert(`Symbol "${symbol}" nicht gefunden.`); return; }
-  const s = await getSettings();
-  s.watch.push([symbol, name.trim() || symbol]);
-  await saveSettings({ watch: s.watch });
-  $("symbolInput").value = "";
+  const btn = $("addBtn");
+  // Symbol, Name, Stück, Wert prüfen – Fehler stehen im Formular statt in einem Dialog
+  let [sym, ...rest] = $("symbolInput").value.trim().split(/\s+/);
+  const symbol = (sym || "").toUpperCase();
+  const name = ($("nameInput").value.trim() || rest.join(" ")).trim();
+  if (!symbol) { setMsg("Bitte ein Symbol eintragen.", "error"); $("symbolInput").focus(); return; }
+  const qty = parsedField($("qtyInput")), value = parsedField($("valueInput"));
+  if (qty.bad || (qty.n != null && qty.n <= 0)) { setMsg("Stück: bitte eine Zahl größer 0 eintragen, z. B. 10 oder 2,5.", "error"); $("qtyInput").focus(); return; }
+  if (value.bad || (value.n != null && value.n < 0)) { setMsg("Wert: bitte einen Betrag in Euro eintragen, z. B. 1.234,56.", "error"); $("valueInput").focus(); return; }
+  const s = await getSettings(), positions = await getPositions();
+  const known = s.watch.findIndex(([x]) => x === symbol);
+  if (editing === null && known < 0) {
+    btn.disabled = true; setMsg("Prüfe Symbol …");
+    try { await fetchQuote(symbol); } catch { btn.disabled = false; setMsg(`Symbol „${symbol}“ nicht gefunden. Tipp: Xetra-Werte enden auf .DE, z. B. SAP.DE.`, "error"); $("symbolInput").focus(); return; }
+    btn.disabled = false;
+  }
+  let msg;
+  if (known < 0) { s.watch.push([symbol, name || symbol]); msg = `${name || symbol} hinzugefügt.`; }
+  else {
+    if (name || editing !== null) s.watch[known][1] = name || symbol;
+    msg = editing !== null ? `${s.watch[known][1]} gespeichert.` : `${symbol} war schon in der Liste – Angaben aktualisiert.`;
+  }
+  // Position: nur mit Angaben anlegen/ändern; beim Bearbeiten löschen leere Felder die Position (ISIN aus dem Import bleibt unberührt)
+  if (qty.n != null || value.n != null) positions[symbol] = { ...positions[symbol], qty: qty.n ?? null, value: value.n ?? null };
+  else if (editing !== null) delete positions[symbol];
+  try {
+    await saveSettings({ watch: s.watch });
+    await chrome.storage.local.set({ positions });
+  } catch (err) { setMsg("Speichern fehlgeschlagen (Chrome-Sync-Speicher voll?): " + err.message, "error"); return; }
+  resetForm(); setMsg(msg, "ok");
+  $("symbolInput").focus();
   renderEditor(); render();
 });
 $("watchList").addEventListener("click", async (e) => {
-  const i = e.target.dataset.i;
-  if (i === undefined) return;
-  const s = await getSettings();
-  const [[sym]] = s.watch.splice(Number(i), 1);
-  await saveSettings({ watch: s.watch });
-  if (!s.watch.some(([x]) => x === sym)) {
-    const positions = await getPositions();
-    delete positions[sym];
-    await chrome.storage.local.set({ positions });
+  const editBtn = e.target.closest("[data-edit]"), delBtn = e.target.closest("[data-del]");
+  if (editBtn) { startEdit(editBtn.dataset.edit, await getSettings(), await getPositions()); renderEditor(); return; }
+  if (!delBtn) return;
+  const sym = delBtn.dataset.del;
+  if (confirmDel !== sym) { // zweistufig: erster Klick fragt nach, zweiter entfernt
+    confirmDel = sym;
+    setTimeout(() => { if (confirmDel === sym) { confirmDel = null; renderEditor(); } }, 3000);
+    renderEditor(); return;
   }
+  confirmDel = null;
+  const s = await getSettings();
+  s.watch = s.watch.filter(([x]) => x !== sym);
+  await saveSettings({ watch: s.watch });
+  const positions = await getPositions();
+  delete positions[sym];
+  await chrome.storage.local.set({ positions });
+  if (editing === sym) resetForm();
+  setMsg("Entfernt.");
   renderEditor(); render();
 });
 $("importBtn").addEventListener("click", async () => {
@@ -329,6 +425,12 @@ $("importBtn").addEventListener("click", async () => {
     status.textContent = "Speichern fehlgeschlagen (Chrome-Sync-Speicher voll?): " + err.message;
   }
   btn.disabled = false;
+  renderEditor(); render();
+});
+$("pane-markets").addEventListener("click", async (e) => {
+  const all = e.target.closest("[data-all]")?.dataset.all;
+  if (!all) return;
+  await saveSettings({ hidden: all === "on" ? [] : MARKETS.flatMap((g) => g.items.map(([sym]) => sym)) });
   renderEditor(); render();
 });
 $("marketList").addEventListener("change", async (e) => {

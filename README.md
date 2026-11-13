@@ -37,6 +37,7 @@ Ohne Konto, ohne API-Key, ohne Tracking, ohne eigenen Server.
 - **Je Position:** Wert, Bestand, Kurs, Mini-Kurve und heutige Veränderung in € und %
 - **Gruppen** (Einzelaktien, ETFs, Sonstige) einklappbar, die Gruppensumme bleibt sichtbar
 - **Sortierung** nach Name, Wert, Veränderung in € oder in %, jeweils auf- und absteigend
+- **Einzelne Positionen** manuell anlegen: Symbol, optional Name, Stück und Wert; später per Stift-Symbol bearbeitbar
 - **Depot-Import:** Ansicht der Bank in die Textarea einfügen – die Symbole werden über die ISIN gefunden
 - **Icon-Badge:** grün ▲ im Plus, rot ▼ im Minus; der Tooltip nennt die Veränderung in % (Update im Hintergrund alle 15 Minuten)
 
@@ -69,11 +70,12 @@ Die Erweiterung ist (noch) nicht im Chrome Web Store und wird als entpackte Erwe
 | Aktion | So geht's |
 |---|---|
 | Kurse neu laden | Pfeil-Symbol oben rechts (sonst 1 Minute Zwischenspeicher) |
-| Wert hinzufügen | Zahnrad → Symbol eingeben, optional mit Namen: `ALV.DE Allianz` |
-| Depot importieren | Zahnrad → „Liste importieren“ → Text einfügen → Importieren |
+| Wert hinzufügen | Zahnrad → „Meine Werte“ → Symbol, optional Name, Stück und Wert (in €) eintragen |
+| Wert bearbeiten / entfernen | Zahnrad → „Meine Werte“ → Stift (ändern) oder Papierkorb (entfernen, zweiter Klick bestätigt) |
+| Depot importieren | Zahnrad → „Import“ → Text einfügen → Importieren |
 | Eigene Werte sortieren | „Name“, „Wert“, „Heute €“ oder „Heute %“ über der Liste; erneuter Klick dreht die Richtung |
 | Gruppe ein-/ausklappen | Klick auf die Gruppenzeile (z. B. „Einzelaktien“) |
-| Standard-Werte ausblenden | Zahnrad → „Standard-Werte“ → Haken entfernen |
+| Märkte ausblenden | Zahnrad → „Märkte“ → Haken entfernen (oder „alle“ / „keine“) |
 | Erklärungen lesen | Info-Symbol oben rechts |
 
 **Symbol-Schreibweise bei Yahoo:** Xetra `.DE` (`SAP.DE`), US-Aktien ohne Endung (`AAPL`), Amsterdam `.AS`, Futures `=F`, Devisen `=X`. Symbole findest du auf [finance.yahoo.com](https://finance.yahoo.com).
